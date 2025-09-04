@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Configuration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #009B3A 0%, #FFDF00 50%, #002776 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #009B3A;
+            text-align: center;
+        }
+        .config-item {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .success { background: #28a745; }
+        .error { background: #dc3545; }
+        .warning { background: #ffc107; color: black; }
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .copy-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🇧🇷 OAuth Configuration Checker</h1>
+        
+        <div class="config-item">
+            <h3>📍 Current URL Information</h3>
+            <p><strong>Current Origin:</strong> <code id="current-origin"></code></p>
+            <p><strong>Current Full URL:</strong> <code id="current-url"></code></p>
+            <p><strong>Expected Callback:</strong> <code id="callback-url"></code></p>
+        </div>
+
+        <div class="config-item">
+            <h3>🔑 Google OAuth Configuration</h3>
+            <p><strong>Client ID:</strong> <code>505403591548-tq3k467vg82i75jt8c13f5b2q2bhv9is.apps.googleusercontent.com</code></p>
+            <p><strong>Required JavaScript Origins:</strong></p>
+            <ul>
+                <li><code>http://localhost:5174</code> <button class="copy-btn" onclick="copyToClipboard('http://localhost:5174')">Copy</button></li>
+                <li><code>http://localhost:5173</code> <button class="copy-btn" onclick="copyToClipboard('http://localhost:5173')">Copy</button></li>
+            </ul>
+            <p><strong>Required Redirect URI:</strong></p>
+            <ul>
+                <li><code>https://otnuqynwyzcgonzfppwm.supabase.co/auth/v1/callback</code> <button class="copy-btn" onclick="copyToClipboard('https://otnuqynwyzcgonzfppwm.supabase.co/auth/v1/callback')">Copy</button></li>
+            </ul>
+        </div>
+
+        <div class="config-item">
+            <h3>🔧 Supabase Configuration</h3>
+            <p><strong>Supabase URL:</strong> <code>https://otnuqynwyzcgonzfppwm.supabase.co</code></p>
+            <p><strong>Required Site URL:</strong> <code id="site-url"></code> <button class="copy-btn" onclick="copyToClipboard(window.location.origin)">Copy</button></p>
+            <p><strong>Required Redirect URLs:</strong></p>
+            <ul>
+                <li><code id="redirect-url-1"></code> <button class="copy-btn" onclick="copyToClipboard(window.location.origin + '/auth/callback')">Copy</button></li>
+                <li><code id="redirect-url-2"></code> <button class="copy-btn" onclick="copyToClipboard(window.location.origin)">Copy</button></li>
+            </ul>
+        </div>
+
+        <div class="config-item">
+            <h3>✅ Configuration Steps</h3>
+            <ol>
+                <li><strong>Google Cloud Console:</strong>
+                    <br>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console Credentials</a>
+                    <br>Edit your OAuth 2.0 Client ID and add the JavaScript origins and redirect URI above.
+                </li>
+                <br>
+                <li><strong>Supabase Dashboard:</strong>
+                    <br>Go to Authentication → Settings and set the Site URL and Redirect URLs above.
+                    <br>Go to Authentication → Providers → Google and enable with your Client ID and Secret.
+                </li>
+            </ol>
+        </div>
+
+        <div class="config-item">
+            <h3>🧪 Test OAuth</h3>
+            <p>After configuring everything above, test your Google OAuth by going back to your app:</p>
+            <p><a href="http://localhost:5174" target="_blank" style="background: #009B3A; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">🚀 Test OAuth in Main App</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Populate current URL information
+        document.getElementById('current-origin').textContent = window.location.origin;
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('callback-url').textContent = window.location.origin + '/auth/callback';
+        document.getElementById('site-url').textContent = window.location.origin;
+        document.getElementById('redirect-url-1').textContent = window.location.origin + '/auth/callback';
+        document.getElementById('redirect-url-2').textContent = window.location.origin;
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#28a745';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#007bff';
+                }, 2000);
+            });
+        }
+
+        // Check if we're on the right port
+        if (window.location.port !== '5174' && window.location.port !== '5173') {
+            document.body.style.border = '5px solid #dc3545';
+            alert('⚠️ Warning: You may need to update your configurations for port ' + window.location.port);
+        }
+    </script>
+</body>
+</html>

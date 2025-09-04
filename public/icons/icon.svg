@@ -1,0 +1,9 @@
+<!-- Placeholder SVG icon for PWA -->
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="32" fill="#3b82f6"/>
+  <rect x="24" y="24" width="144" height="144" rx="24" fill="white"/>
+  <circle cx="96" cy="72" r="20" fill="#3b82f6"/>
+  <rect x="72" y="108" width="48" height="8" rx="4" fill="#3b82f6"/>
+  <rect x="64" y="128" width="64" height="8" rx="4" fill="#6b7280"/>
+  <rect x="76" y="148" width="40" height="6" rx="3" fill="#9ca3af"/>
+</svg>

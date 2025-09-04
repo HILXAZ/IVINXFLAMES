@@ -1,0 +1,212 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  body {
+    @apply bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-900;
+    background-attachment: fixed;
+  }
+  
+  /* Responsive text scaling */
+  html {
+    font-size: 14px;
+  }
+  
+  @media (min-width: 640px) {
+    html {
+      font-size: 16px;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    html {
+      font-size: 16px;
+    }
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm sm:text-base;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm sm:text-base;
+  }
+  
+  .card {
+    @apply bg-white/20 backdrop-blur-lg rounded-xl shadow-xl p-4 sm:p-6 border border-white/30;
+    backdrop-filter: blur(16px);
+  }
+  
+  .input {
+    @apply w-full px-3 py-2 text-sm sm:text-base border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white/20 backdrop-blur-md;
+    backdrop-filter: blur(8px);
+  }
+
+  /* Glassmorphism Utility Classes */
+  .glass-light {
+    @apply bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg;
+    backdrop-filter: blur(4px);
+  }
+  
+  .glass-medium {
+    @apply bg-white/20 backdrop-blur-md border border-white/30 shadow-xl;
+    backdrop-filter: blur(12px);
+  }
+  
+  .glass-strong {
+    @apply bg-white/30 backdrop-blur-lg border border-white/40 shadow-2xl;
+    backdrop-filter: blur(16px);
+  }
+  
+  .glass-ultra {
+    @apply bg-white/40 backdrop-blur-xl border border-white/50 shadow-2xl;
+    backdrop-filter: blur(20px);
+  }
+
+  /* Animated Glass Effects */
+  .glass-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  /* Floating Animations */
+  .glass-float {
+    animation: glass-float 6s ease-in-out infinite;
+  }
+
+  @keyframes glass-float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(1deg); }
+  }
+
+  /* Glow Effects */
+  .glass-glow {
+    box-shadow: 
+      0 0 20px rgba(255, 255, 255, 0.1),
+      0 0 40px rgba(59, 130, 246, 0.1),
+      0 0 80px rgba(147, 51, 234, 0.1);
+  }
+}
+
+/* Custom animations */
+.breathe-animation {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Gradient backgrounds */
+.gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.success-gradient {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+}
+
+.danger-gradient {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+
+/* Responsive utilities */
+.text-responsive {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive {
+    font-size: 1.125rem;
+  }
+}
+
+.heading-responsive {
+  font-size: 1.125rem;
+}
+
+@media (min-width: 640px) {
+  .heading-responsive {
+    font-size: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .heading-responsive {
+    font-size: 1.5rem;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .overflow-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  input, textarea, select {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  /* Better touch targets */
+  button, .btn, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improved spacing on mobile */
+  .mobile-spacing {
+    padding: 1rem;
+  }
+  
+  /* Hide decorative elements on small screens */
+  .mobile-hide {
+    display: none !important;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1023px) {
+  .tablet-spacing {
+    padding: 1.5rem;
+  }
+}
+
+/* Desktop optimizations */
+@media (min-width: 1024px) {
+  .desktop-spacing {
+    padding: 2rem;
+  }
+}

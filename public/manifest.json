@@ -1,0 +1,22 @@
+{
+  "name": "Addiction Control - Recovery Companion",
+  "short_name": "AddictionControl",
+  "description": "A comprehensive addiction recovery and habit tracking application with AI support",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "medical", "lifestyle", "productivity"],
+  "lang": "en",
+  "dir": "ltr"
+}

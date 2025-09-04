@@ -1,0 +1,9 @@
+<!-- Simple favicon as SVG that can be used as icon -->
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="6" fill="#3b82f6"/>
+  <rect x="4" y="4" width="24" height="24" rx="4" fill="white"/>
+  <circle cx="16" cy="12" r="3" fill="#3b82f6"/>
+  <rect x="12" y="18" width="8" height="2" rx="1" fill="#3b82f6"/>
+  <rect x="10" y="22" width="12" height="2" rx="1" fill="#6b7280"/>
+  <rect x="13" y="26" width="6" height="1" rx="0.5" fill="#9ca3af"/>
+</svg>
