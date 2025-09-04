@@ -205,6 +205,7 @@ export default function VoiceMentor() {
           ))}
         </div>
       </div>
+      </div>
     </OppenheimerBackground>
   )
 }
