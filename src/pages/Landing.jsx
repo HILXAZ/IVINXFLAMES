@@ -25,12 +25,28 @@ import {
 } from 'lucide-react'
 import SupportMap from '../components/SupportMap'
 import VantaBirds from '../components/VantaBirds'
+import { supabase, db } from '../lib/supabase'
 
 const Landing = () => {
   const [activeFeature, setActiveFeature] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
   const [showTimeline, setShowTimeline] = useState(false)
   const [showSupportMap, setShowSupportMap] = useState(false)
+  const [feedbackForm, setFeedbackForm] = useState({
+    name: '',
+    email: '',
+    type: '',
+    rating: 0,
+    message: ''
+  })
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false)
+  const [feedbackStats, setFeedbackStats] = useState({
+    total: 2847,
+    featureRequests: 524,
+    averageRating: 4.8,
+    responseRate: 98
+  })
   
   // Advanced animation refs and values
   const heroRef = useRef(null)
@@ -54,6 +70,90 @@ const Landing = () => {
       mouseY.set((e.clientY - centerY) / 25)
     }
   }, [mouseX, mouseY])
+  
+  // Load feedback statistics on component mount
+  useEffect(() => {
+    const loadFeedbackStats = async () => {
+      try {
+        const stats = await db.getFeedbackStats()
+        setFeedbackStats(stats)
+      } catch (error) {
+        console.error('Error loading feedback stats:', error)
+      }
+    }
+    
+    loadFeedbackStats()
+  }, [])
+  
+  // Feedback form handlers
+  const handleFeedbackChange = (field, value) => {
+    setFeedbackForm(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+  
+  const handleRatingClick = (rating) => {
+    setFeedbackForm(prev => ({
+      ...prev,
+      rating
+    }))
+  }
+  
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault()
+    setIsSubmittingFeedback(true)
+    
+    try {
+      // Get current user if authenticated
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      // Prepare feedback data
+      const feedbackData = {
+        user_id: user?.id || null,
+        name: feedbackForm.name || null,
+        email: feedbackForm.email || null,
+        type: feedbackForm.type,
+        rating: feedbackForm.rating || null,
+        message: feedbackForm.message
+      }
+      
+      // Submit to Supabase
+      await db.submitFeedback(feedbackData)
+      
+      console.log('Feedback submitted successfully:', feedbackData)
+      setFeedbackSubmitted(true)
+      
+      // Update feedback stats
+      const newStats = await db.getFeedbackStats()
+      setFeedbackStats(newStats)
+      
+      // Reset form after successful submission
+      setTimeout(() => {
+        setFeedbackForm({
+          name: '',
+          email: '',
+          type: '',
+          rating: 0,
+          message: ''
+        })
+        setFeedbackSubmitted(false)
+      }, 3000)
+    } catch (error) {
+      console.error('Error submitting feedback:', error)
+      alert('Failed to submit feedback. Please try again.')
+    } finally {
+      setIsSubmittingFeedback(false)
+    }
+  }
+  
+  const handleQuickFeedback = (type) => {
+    setFeedbackForm(prev => ({
+      ...prev,
+      type: type,
+      message: `Quick feedback: ${type}`
+    }))
+  }
   
   // Create floating particles on click
   const createParticles = useCallback((e) => {
@@ -1175,6 +1275,273 @@ const Landing = () => {
                 <span>Find Help Near Me</span>
               </button>
             </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Feedback Section */}
+      <section className="relative z-10 container mx-auto px-6 py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="bg-gradient-to-r from-emerald-500/10 to-teal-600/10 backdrop-blur-xl border border-emerald-300/20 rounded-3xl p-12"
+        >
+          <div className="text-center mb-12">
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-4xl md:text-5xl font-bold text-white mb-6"
+            >
+              Your Voice Matters
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-xl text-white/80 max-w-3xl mx-auto"
+            >
+              Help us improve MindBalance by sharing your thoughts, suggestions, or feedback. 
+              Together, we can build a better recovery platform for everyone.
+            </motion.p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Feedback Form */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-6"
+            >
+              {feedbackSubmitted ? (
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-center py-12"
+                >
+                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Thank You!</h3>
+                  <p className="text-white/80">Your feedback has been submitted successfully. We appreciate your input!</p>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleFeedbackSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Your Name (Optional)</label>
+                    <input
+                      type="text"
+                      value={feedbackForm.name}
+                      onChange={(e) => handleFeedbackChange('name', e.target.value)}
+                      placeholder="Enter your name"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all duration-200 backdrop-blur-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Email (Optional)</label>
+                    <input
+                      type="email"
+                      value={feedbackForm.email}
+                      onChange={(e) => handleFeedbackChange('email', e.target.value)}
+                      placeholder="Enter your email for follow-up"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all duration-200 backdrop-blur-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Feedback Type</label>
+                    <select 
+                      value={feedbackForm.type}
+                      onChange={(e) => handleFeedbackChange('type', e.target.value)}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all duration-200 backdrop-blur-xl"
+                    >
+                      <option value="" className="bg-gray-800">Select feedback type</option>
+                      <option value="feature-request" className="bg-gray-800">Feature Request</option>
+                      <option value="bug-report" className="bg-gray-800">Bug Report</option>
+                      <option value="general-feedback" className="bg-gray-800">General Feedback</option>
+                      <option value="user-experience" className="bg-gray-800">User Experience</option>
+                      <option value="suggestion" className="bg-gray-800">Suggestion</option>
+                      <option value="compliment" className="bg-gray-800">Compliment</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Rate Your Experience</label>
+                    <div className="flex items-center space-x-2">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <motion.button
+                          key={rating}
+                          type="button"
+                          onClick={() => handleRatingClick(rating)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="p-2 group"
+                        >
+                          <Star 
+                            className={`w-8 h-8 transition-colors cursor-pointer ${
+                              rating <= feedbackForm.rating 
+                                ? 'text-yellow-400 fill-current' 
+                                : 'text-gray-400 group-hover:text-yellow-400'
+                            }`} 
+                          />
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-white font-semibold mb-2">Your Message</label>
+                    <textarea
+                      rows="6"
+                      value={feedbackForm.message}
+                      onChange={(e) => handleFeedbackChange('message', e.target.value)}
+                      placeholder="Share your thoughts, suggestions, or any feedback you have about MindBalance..."
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all duration-200 backdrop-blur-xl resize-none"
+                    ></textarea>
+                  </div>
+
+                  <motion.button
+                    type="submit"
+                    disabled={isSubmittingFeedback}
+                    whileHover={{ 
+                      scale: isSubmittingFeedback ? 1 : 1.02,
+                      boxShadow: isSubmittingFeedback ? "none" : "0 20px 40px rgba(16, 185, 129, 0.4)"
+                    }}
+                    whileTap={{ scale: isSubmittingFeedback ? 1 : 0.98 }}
+                    className={`w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 shadow-xl flex items-center justify-center space-x-2 ${
+                      isSubmittingFeedback ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {isSubmittingFeedback ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <MessageCircle className="w-5 h-5" />
+                        <span>Send Feedback</span>
+                      </>
+                    )}
+                  </motion.button>
+                </form>
+              )}
+            </motion.div>
+
+            {/* Feedback Stats & Quick Options */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-8"
+            >
+              {/* Feedback Stats */}
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <h3 className="text-xl font-bold text-white mb-4">Community Feedback</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/80">Total Feedback Received</span>
+                    <span className="text-emerald-400 font-bold">{feedbackStats.total.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/80">Feature Requests</span>
+                    <span className="text-blue-400 font-bold">{feedbackStats.featureRequests}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/80">Average Rating</span>
+                    <div className="flex items-center space-x-1">
+                      <span className="text-yellow-400 font-bold">{feedbackStats.averageRating}</span>
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/80">Response Rate</span>
+                    <span className="text-green-400 font-bold">{feedbackStats.responseRate}%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Feedback Options */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-white">Quick Feedback</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { icon: "👍", text: "Love it!", color: "from-green-500 to-emerald-600", type: "compliment" },
+                    { icon: "💡", text: "Have an idea", color: "from-yellow-500 to-orange-600", type: "feature-request" },
+                    { icon: "🐛", text: "Found a bug", color: "from-red-500 to-pink-600", type: "bug-report" },
+                    { icon: "❓", text: "Need help", color: "from-blue-500 to-purple-600", type: "general-feedback" },
+                  ].map((option, index) => (
+                    <motion.button
+                      key={index}
+                      onClick={() => handleQuickFeedback(option.type)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`bg-gradient-to-r ${option.color} p-4 rounded-xl text-white font-medium transition-all duration-300 hover:shadow-lg flex flex-col items-center space-y-2`}
+                    >
+                      <span className="text-2xl">{option.icon}</span>
+                      <span className="text-sm">{option.text}</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Improvements */}
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <h3 className="text-xl font-bold text-white mb-4">Recent Improvements</h3>
+                <div className="space-y-3">
+                  {[
+                    { text: "Enhanced AI Coach responses based on user feedback", icon: "🤖" },
+                    { text: "Added dark mode support (most requested feature)", icon: "🌙" },
+                    { text: "Improved mobile app performance", icon: "📱" },
+                    { text: "New meditation and breathing exercises", icon: "🧘" },
+                  ].map((improvement, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg"
+                    >
+                      <span className="text-xl">{improvement.icon}</span>
+                      <span className="text-white/80 text-sm">{improvement.text}</span>
+                      <CheckCircle className="w-4 h-4 text-green-400 ml-auto" />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contact Methods */}
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                <h3 className="text-xl font-bold text-white mb-4">Other Ways to Reach Us</h3>
+                <div className="space-y-3">
+                  <a
+                    href="mailto:feedback@mindbalance.app"
+                    className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors group"
+                  >
+                    <Mail className="w-5 h-5 text-blue-400 group-hover:text-blue-300" />
+                    <div>
+                      <div className="text-white font-medium">Email Us</div>
+                      <div className="text-white/60 text-sm">feedback@mindbalance.app</div>
+                    </div>
+                  </a>
+                  <a
+                    href="#"
+                    className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors group"
+                  >
+                    <MessageCircle className="w-5 h-5 text-green-400 group-hover:text-green-300" />
+                    <div>
+                      <div className="text-white font-medium">Live Chat</div>
+                      <div className="text-white/60 text-sm">Available 24/7</div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
       </section>

@@ -172,7 +172,17 @@ app.post('/api/stt/deepgram', express.raw({ type: '*/*', limit: '25mb' }), async
     const bodyBuffer = req.body
     if (!bodyBuffer || !bodyBuffer.length) return res.status(400).json({ error: 'No audio provided' })
 
-    const url = 'https://api.deepgram.com/v1/listen?model=nova-2-general&smart_format=true&filler_words=false&language=en-US'
+    // Language handling: default en-US; support Malayalam (ml / ml-IN) via ?lang query
+    const rawLang = (req.query.lang || '').toString().trim()
+    let dgLang = 'en-US'
+    if (rawLang) {
+      const lower = rawLang.toLowerCase()
+      if (lower === 'ml' || lower === 'ml-in') dgLang = 'ml'
+      else if (lower === 'en' || lower === 'en-us' || lower === 'en-gb') dgLang = 'en-US'
+      else dgLang = 'en-US' // restrict to supported
+    }
+
+    const url = `https://api.deepgram.com/v1/listen?model=nova-2-general&smart_format=true&filler_words=false&language=${encodeURIComponent(dgLang)}`
     const dgResp = await fetch(url, {
       method: 'POST',
       headers: { 'Authorization': `Token ${DEEPGRAM_API_KEY}`, 'Content-Type': contentType },
@@ -221,3 +231,90 @@ app.post('/api/coach/chat', async (req, res) => {
 })
 
 export default app
+
+// Utility: Parse ISO8601 duration (e.g., PT15M12S) to minutes (integer)
+function isoDurationToMinutes(iso) {
+  try {
+    const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+    if (!m) return 0
+    const h = parseInt(m[1] || '0', 10)
+    const min = parseInt(m[2] || '0', 10)
+    const s = parseInt(m[3] || '0', 10)
+    return Math.max(1, Math.round(h * 60 + min + s / 60))
+  } catch { return 0 }
+}
+
+// YouTube search proxy: returns embeddable videos for a query
+app.get('/api/youtube/search', async (req, res) => {
+  try {
+    const YT_KEY = process.env.YOUTUBE_API_KEY || process.env.GOOGLE_API_KEY
+    if (!YT_KEY) return res.status(500).json({ error: 'Missing YOUTUBE_API_KEY' })
+
+    const q = (req.query.q || '').toString().trim()
+    const max = Math.min(25, Math.max(1, parseInt(req.query.max || '10', 10) || 10))
+    if (!q) return res.status(400).json({ error: 'q required' })
+
+    // First: search for embeddable videos
+    const searchParams = new URLSearchParams({
+      key: YT_KEY,
+      part: 'snippet',
+      q,
+      maxResults: String(max),
+      type: 'video',
+      videoEmbeddable: 'true',
+      safeSearch: 'strict'
+    })
+    const searchUrl = `https://www.googleapis.com/youtube/v3/search?${searchParams}`
+    const sResp = await fetch(searchUrl)
+    if (!sResp.ok) {
+      const text = await sResp.text().catch(() => '')
+      return res.status(502).json({ error: 'YouTube search failed', details: text })
+    }
+    const sJson = await sResp.json()
+    const ids = (sJson.items || []).map(it => it?.id?.videoId).filter(Boolean)
+    if (!ids.length) return res.json({ items: [] })
+
+    // Then: get details for duration and stats
+    const vidParams = new URLSearchParams({
+      key: YT_KEY,
+      part: 'contentDetails,statistics,snippet',
+      id: ids.join(',')
+    })
+    const vidUrl = `https://www.googleapis.com/youtube/v3/videos?${vidParams}`
+    const vResp = await fetch(vidUrl)
+    if (!vResp.ok) {
+      const text = await vResp.text().catch(() => '')
+      return res.status(502).json({ error: 'YouTube videos fetch failed', details: text })
+    }
+    const vJson = await vResp.json()
+    const category = (req.query.category || '').toString()
+    const items = (vJson.items || []).map(v => {
+      const videoId = v.id
+      const title = v.snippet?.title || ''
+      const description = v.snippet?.description || ''
+      const thumb = v.snippet?.thumbnails?.high?.url || v.snippet?.thumbnails?.medium?.url || v.snippet?.thumbnails?.default?.url || ''
+      const minutes = isoDurationToMinutes(v.contentDetails?.duration || 'PT0M')
+      const views = Number(v.statistics?.viewCount || 0)
+      return {
+        id: videoId,
+        title,
+        description,
+        youtube_id: videoId,
+        youtube_url: `https://www.youtube.com/watch?v=${videoId}`,
+        thumbnail_url: thumb,
+        category,
+        difficulty_level: 'beginner',
+        duration_minutes: minutes,
+        target_muscle_groups: [],
+        equipment_needed: ['none'],
+        tags: [],
+        recovery_benefits: [],
+        is_featured: false,
+        view_count: views
+      }
+    })
+    res.json({ items })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})

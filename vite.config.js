@@ -11,9 +11,9 @@ export default defineConfig(({ mode }) => {
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Addiction Control App',
-        short_name: 'AddictionControl',
-        description: 'Track and overcome addictions with AI-powered motivation',
+        name: 'IVINFLAMEX',
+        short_name: 'IVINFLAMEX',
+        description: 'IVINFLAMEX – Addiction control, wellness tracking, and AI voice coach',
         theme_color: '#3b82f6',
         background_color: '#ffffff',
         display: 'standalone',

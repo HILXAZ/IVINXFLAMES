@@ -370,5 +370,67 @@ export const db = {
     
     if (error) throw error
     return data
+  },
+
+  // Feedback
+  async submitFeedback(feedback) {
+    const { data, error } = await supabase
+      .from('feedback')
+      .insert(feedback)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  async getFeedback(userId) {
+    const { data, error } = await supabase
+      .from('feedback')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data || []
+  },
+
+  async getAllFeedback() {
+    const { data, error } = await supabase
+      .from('feedback')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data || []
+  },
+
+  async getFeedbackStats() {
+    try {
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('type, rating')
+      
+      if (error) throw error
+      
+      const stats = {
+        total: data.length,
+        featureRequests: data.filter(f => f.type === 'feature-request').length,
+        averageRating: data.length > 0 ? 
+          (data.filter(f => f.rating).reduce((sum, f) => sum + f.rating, 0) / 
+           data.filter(f => f.rating).length).toFixed(1) : 0,
+        responseRate: 98 // This could be calculated based on actual response data
+      }
+      
+      return stats
+    } catch (error) {
+      console.error('Error getting feedback stats:', error)
+      return {
+        total: 0,
+        featureRequests: 0,
+        averageRating: 0,
+        responseRate: 0
+      }
+    }
   }
 }

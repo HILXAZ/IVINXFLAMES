@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, startTransition } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
@@ -19,9 +19,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
+      startTransition(() => {
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      })
     })
 
     // Listen for auth changes
@@ -30,8 +32,10 @@ export const AuthProvider = ({ children }) => {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email)
       
-      setSession(session)
-      setUser(session?.user ?? null)
+      startTransition(() => {
+        setSession(session)
+        setUser(session?.user ?? null)
+      })
       
       if (event === 'SIGNED_IN' && session?.user) {
         // Create or update user profile
@@ -60,8 +64,10 @@ export const AuthProvider = ({ children }) => {
       if (event === 'SIGNED_OUT') {
         console.log('User signed out')
         // Clear state immediately
-        setUser(null)
-        setSession(null)
+        startTransition(() => {
+          setUser(null)
+          setSession(null)
+        })
         // Redirect to login if on protected page (but don't block the UI)
         setTimeout(() => {
           if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
@@ -70,7 +76,9 @@ export const AuthProvider = ({ children }) => {
         }, 0)
       }
       
-      setLoading(false)
+      startTransition(() => {
+        setLoading(false)
+      })
     })
 
     return () => subscription.unsubscribe()
@@ -204,37 +212,72 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     console.log('🚪 Sign out initiated at:', new Date().toISOString())
+    
     try {
       // Attempt to sign out from Supabase auth first
+      console.log('📤 Calling supabase.auth.signOut()...')
       const { error } = await supabase.auth.signOut()
       if (error) {
-        console.warn('Supabase signOut error:', error)
+        console.warn('⚠️ Supabase signOut error:', error)
+      } else {
+        console.log('✅ Supabase signOut successful')
       }
     } catch (err) {
-      console.warn('Supabase signOut threw:', err)
+      console.warn('❌ Supabase signOut threw:', err)
     }
 
     try {
       // Clear local state and any cached session
-      setUser(null)
-      setSession(null)
+      console.log('🧹 Clearing local state...')
+      startTransition(() => {
+        setUser(null)
+        setSession(null)
+      })
+      
       // Best-effort: clear local storage keys used by Supabase
+      console.log('🗂️ Clearing localStorage...')
       Object.keys(localStorage).forEach((k) => {
         if (k.toLowerCase().includes('supabase') || k.toLowerCase().includes('sb-')) {
-          try { localStorage.removeItem(k) } catch (_) {}
+          try { 
+            localStorage.removeItem(k)
+            console.log(`🗑️ Removed localStorage key: ${k}`)
+          } catch (_) {
+            console.warn(`⚠️ Failed to remove localStorage key: ${k}`)
+          }
         }
       })
       console.log('✅ Local auth state cleared at:', new Date().toISOString())
     } catch (e) {
-      console.warn('Local cleanup failed:', e)
+      console.warn('❌ Local cleanup failed:', e)
     }
 
     // Redirect deterministically to login
     try {
+      console.log('🔄 Redirecting to login...')
+      console.log('📍 Current pathname:', window.location.pathname)
+      
       if (window.location.pathname !== '/login') {
-        window.location.replace('/login')
+        console.log('🚀 Using window.location.replace to redirect to /login')
+        
+        // Force a small delay to ensure state is cleared
+        setTimeout(() => {
+          window.location.replace('/login')
+        }, 100)
+      } else {
+        console.log('ℹ️ Already on login page')
+        // If already on login page, just refresh it
+        window.location.reload()
       }
-    } catch (_) {}
+    } catch (err) {
+      console.warn('❌ Primary redirect failed, trying alternative method:', err)
+      try {
+        window.location.href = '/login'
+      } catch (err2) {
+        console.warn('❌ Alternative redirect also failed:', err2)
+        // Last resort - force a full page refresh
+        window.location.reload()
+      }
+    }
 
     return { error: null }
   }

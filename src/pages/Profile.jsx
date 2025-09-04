@@ -90,10 +90,14 @@ const Profile = () => {
   }
 
   const handleSignOut = async () => {
+    console.log('👤 Profile: Sign out button clicked')
+    
     try {
+      console.log('📞 Profile: Calling signOut from AuthContext...')
       await signOut()
+      console.log('✅ Profile: signOut completed successfully')
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('❌ Profile: Error signing out:', error)
     }
   }
 

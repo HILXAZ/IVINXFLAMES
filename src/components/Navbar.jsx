@@ -31,6 +31,13 @@ const Navbar = () => {
   const [isMoreOpen, setIsMoreOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
 
+  // Debug logging for authentication state
+  console.log('🔍 Navbar: Current auth state:', { 
+    user: user ? { id: user.id, email: user.email } : null,
+    signOutFunction: typeof signOut,
+    isSigningOut 
+  })
+
   const navItems = [
     { to: '/dashboard', icon: Home, label: 'Dashboard', color: 'blue' },
     { to: '/tracker', icon: Target, label: 'Tracker', color: 'green' },
@@ -54,25 +61,44 @@ const Navbar = () => {
   setIsMoreOpen(false)
   }, [location])
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    console.log('🔘 Navbar: Sign out button clicked')
+    
+    // Add immediate feedback to test button responsiveness
+    if (!window.confirm('Are you sure you want to sign out?')) {
+      console.log('🚫 Navbar: Sign out cancelled by user')
+      return
+    }
+    
     // Set loading state for visual feedback
     setIsSigningOut(true)
+    console.log('🔄 Navbar: Loading state set to true')
     
-    // Call signOut without awaiting for immediate response
-    signOut()
+    try {
+      // Call signOut and wait for completion
+      console.log('📞 Navbar: Calling signOut from AuthContext...')
+      await signOut()
+      console.log('✅ Navbar: signOut completed successfully')
+    } catch (error) {
+      console.error('❌ Navbar: Sign out error:', error)
+    }
     
     // Optionally close any open menus immediately
     setIsMoreOpen(false)
     setIsMobileMenuOpen(false)
+    console.log('📋 Navbar: Menus closed')
     
     // Reset loading state after a short delay (for visual feedback)
-    setTimeout(() => setIsSigningOut(false), 500)
+    setTimeout(() => {
+      setIsSigningOut(false)
+      console.log('⏰ Navbar: Loading state reset to false')
+    }, 500)
   }
 
   return (
     <>
       {/* Desktop Navigation - Compact AI Design */}
-      <nav className="hidden lg:flex bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+  <nav className="hidden lg:flex bg-white/10 backdrop-blur-xl border-b border-white/10 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 w-full">
           <div className="flex justify-between h-14">
             {/* Logo Section */}
@@ -220,7 +246,7 @@ const Navbar = () => {
       </nav>
 
       {/* Tablet Navigation - Simplified */}
-      <nav className="hidden md:flex lg:hidden bg-white/95 backdrop-blur-md border-b border-gray-200/50">
+  <nav className="hidden md:flex lg:hidden bg-white/10 backdrop-blur-xl border-b border-white/10">
         <div className="w-full px-4">
           <div className="flex justify-between items-center h-14">
             {/* Logo */}
@@ -290,7 +316,7 @@ const Navbar = () => {
         </div>
       </nav>
       {/* Mobile Navigation - Compact */}
-      <nav className="md:hidden bg-white/95 backdrop-blur-md border-b border-gray-200/50">
+  <nav className="md:hidden bg-white/10 backdrop-blur-xl border-b border-white/10">
         <div className="px-4">
           <div className="flex justify-between items-center h-14">
             {/* Logo */}
@@ -395,7 +421,7 @@ const Navbar = () => {
       </nav>
 
       {/* Bottom Navigation for Mobile */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200/50 z-50 shadow-sm">
+  <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/10 backdrop-blur-xl border-t border-white/10 z-50 shadow-sm">
         <div className="grid grid-cols-5 h-16">
           {navItems.slice(0, 5).map((item) => (
             <NavLink

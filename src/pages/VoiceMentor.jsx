@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Vapi from '@vapi-ai/web'
 import { useToast } from '../components/Toast'
+import OppenheimerBackground from '../components/OppenheimerBackground'
 
 export default function VoiceMentor() {
   const { push } = useToast()
@@ -137,32 +138,33 @@ export default function VoiceMentor() {
   }, [muted])
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Live Voice Mentor</h1>
-        <div className="flex items-center space-x-2">
-          {demoMode && <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">DEMO MODE</span>}
-          <span className="text-xs px-2 py-1 rounded bg-gray-100 border">{status}</span>
+    <OppenheimerBackground>
+      <div className="relative z-10 max-w-4xl mx-auto p-4 space-y-4">
+        <div className="flex items-center justify-between bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-xl">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent">Live Voice Mentor</h1>
+          <div className="flex items-center space-x-2">
+            {demoMode && <span className="text-xs px-3 py-1.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30">DEMO MODE</span>}
+            <span className="text-xs px-3 py-1.5 rounded-full bg-white/20 text-white border border-white/30">{status}</span>
+          </div>
         </div>
-      </div>
 
       {!PUBLIC_KEY || !ASSISTANT_ID ? (
-        <div className="p-4 rounded border border-orange-200 bg-orange-50">
-          <h3 className="font-semibold text-orange-800 mb-2">🎙️ Voice Feature Setup Required</h3>
-          <p className="text-sm text-orange-700 mb-3">
+        <div className="p-6 rounded-2xl border border-orange-400/30 bg-orange-500/10 backdrop-blur-xl">
+          <h3 className="font-semibold text-orange-200 mb-3 text-lg">🎙️ Voice Feature Setup Required</h3>
+          <p className="text-sm text-orange-100 mb-4 leading-relaxed">
             To use live voice chat, you need to configure Vapi (Voice AI). In the meantime, try the demo mode!
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-3 flex-wrap">
             <button 
               onClick={startDemo} 
-              className="px-3 py-2 rounded bg-blue-600 text-white text-sm"
+              className="px-4 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
               disabled={demoMode}
             >
               Start Demo Mode
             </button>
             <button 
               onClick={stopDemo} 
-              className="px-3 py-2 rounded bg-gray-200 border text-sm"
+              className="px-4 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
               disabled={!demoMode}
             >
               Stop Demo
@@ -170,7 +172,7 @@ export default function VoiceMentor() {
             {demoMode && (
               <button 
                 onClick={simulateUserInput} 
-                className="px-3 py-2 rounded bg-green-600 text-white text-sm"
+                className="px-4 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 Simulate Conversation
               </button>
@@ -178,31 +180,31 @@ export default function VoiceMentor() {
           </div>
         </div>
       ) : (
-        <div className="flex gap-2">
-          <button onClick={start} className="px-3 py-2 rounded bg-emerald-600 text-white disabled:opacity-50" disabled={status==='live'||status==='connecting'}>Start</button>
-          <button onClick={stop} className="px-3 py-2 rounded bg-gray-200 border" disabled={status!=='live' && status!=='connecting'}>Stop</button>
-          <button onClick={toggleMute} className="px-3 py-2 rounded bg-blue-600 text-white">{muted ? 'Unmute' : 'Mute'}</button>
+        <div className="flex gap-3 flex-wrap bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20">
+          <button onClick={start} className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-medium disabled:opacity-50 transition-all duration-200 shadow-lg" disabled={status==='live'||status==='connecting'}>Start Voice</button>
+          <button onClick={stop} className="px-4 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white font-medium transition-all duration-200 shadow-lg" disabled={status!=='live' && status!=='connecting'}>Stop Voice</button>
+          <button onClick={toggleMute} className="px-4 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-medium transition-all duration-200 shadow-lg">{muted ? 'Unmute' : 'Mute'}</button>
         </div>
       )}
 
       {partial && (
-        <div className="p-3 rounded border bg-yellow-50 text-sm">
-          <strong>Speaking…</strong> {partial}
+        <div className="p-4 rounded-2xl border border-yellow-400/30 bg-yellow-500/10 text-yellow-100 text-sm backdrop-blur-xl shadow-lg">
+          <strong className="text-yellow-200">Speaking…</strong> {partial}
         </div>
       )}
 
-      <div className="rounded border bg-white">
-        <div className="px-3 py-2 text-xs text-gray-500 border-b">Transcript</div>
-        <div className="p-3 space-y-2 max-h-80 overflow-auto text-sm">
-          {messages.length === 0 && <div className="text-gray-500">No messages yet.</div>}
+      <div className="rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-xl">
+        <div className="px-4 py-3 text-sm text-gray-200 border-b border-white/20 bg-white/5 rounded-t-2xl font-medium">Transcript</div>
+        <div className="p-4 space-y-3 max-h-80 overflow-auto text-sm">
+          {messages.length === 0 && <div className="text-gray-300 italic">No messages yet. Start a conversation!</div>}
           {messages.map((m, i) => (
-            <div key={i} className={m.role === 'assistant' ? 'text-gray-900' : 'text-gray-700'}>
-              <span className="inline-block min-w-20 font-semibold mr-2 capitalize">{m.role}:</span>
-              <span>{m.text}</span>
+            <div key={i} className={m.role === 'assistant' ? 'text-blue-200' : 'text-green-200'}>
+              <span className="inline-block min-w-20 font-semibold mr-3 capitalize text-white bg-white/20 px-2 py-1 rounded-lg">{m.role}:</span>
+              <span className="leading-relaxed">{m.text}</span>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </OppenheimerBackground>
   )
 }

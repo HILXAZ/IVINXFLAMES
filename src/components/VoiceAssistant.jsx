@@ -336,8 +336,6 @@ const VoiceAssistant = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      )}
-      </AnimatePresence>
 
       {/* Context Menu */}
       <AnimatePresence>

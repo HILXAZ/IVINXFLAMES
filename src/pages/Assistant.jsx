@@ -3,10 +3,11 @@ import { Send, Mic, Square, Volume2, VolumeX } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 import LoadingSpinner from '../components/LoadingSpinner'
+import OppenheimerBackground from '../components/OppenheimerBackground'
 
 // Enhanced AI Avatar Component with Ultra-Realistic Features
-const AnimatedAvatar = ({ speaking, listening }) => {
-  const [avatarMode, setAvatarMode] = useState('robot') // Default to robot mode
+const AnimatedAvatar = ({ speaking, listening, locale }) => {
+  const [avatarMode, setAvatarMode] = useState('robot') // 'robot' | 'realistic' | 'hologram' | 'german'
   const [eyeState, setEyeState] = useState('normal')
   const [mouthState, setMouthState] = useState('closed')
   
@@ -65,7 +66,7 @@ const AnimatedAvatar = ({ speaking, listening }) => {
   const currentStyle = avatarStyles[avatarMode]
   
   return (
-    <motion.div 
+  <motion.div 
       className="relative w-32 h-32 mx-auto rounded-full overflow-hidden cursor-pointer"
       style={{
         background: currentStyle.background,
@@ -81,7 +82,7 @@ const AnimatedAvatar = ({ speaking, listening }) => {
         rotate: { duration: 0.4, repeat: speaking ? Infinity : 0 }
       }}
       onClick={() => {
-        const modes = ['realistic', 'robot', 'hologram']
+        const modes = ['german', 'robot', 'realistic', 'hologram']
         const currentIndex = modes.indexOf(avatarMode)
         setAvatarMode(modes[(currentIndex + 1) % modes.length])
       }}
@@ -167,22 +168,30 @@ const AnimatedAvatar = ({ speaking, listening }) => {
         </div>
       )}
       
-      {avatarMode === 'robot' && (
+    {(avatarMode === 'robot' || avatarMode === 'german') && (
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Advanced Robotic AI Face */}
-          <div className="relative w-28 h-28 bg-gradient-to-br from-gray-100 via-blue-100 to-indigo-200 rounded-2xl shadow-inner border-2 border-blue-400">
+      <div className={`relative w-28 h-28 rounded-2xl shadow-inner border-2 ${avatarMode === 'german' ? 'bg-gradient-to-br from-gray-100 via-emerald-100 to-teal-200 border-emerald-500' : 'bg-gradient-to-br from-gray-100 via-blue-100 to-indigo-200 border-blue-400'}`}>
             
             {/* Robot Head Top with Advanced Antenna */}
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-8 h-6 bg-gradient-to-b from-blue-400 to-blue-600 rounded-t-xl border border-blue-500">
+            <div className={`absolute -top-3 left-1/2 transform -translate-x-1/2 w-8 h-6 rounded-t-xl border ${avatarMode === 'german' ? 'bg-gradient-to-b from-emerald-400 to-teal-600 border-emerald-600' : 'bg-gradient-to-b from-blue-400 to-blue-600 border-blue-500'}`}>
               <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-cyan-300 rounded-full">
                 <motion.div 
                   className="w-full h-full bg-cyan-400 rounded-full"
                   animate={{ 
                     boxShadow: speaking ? 
-                      ['0 0 5px #06b6d4', '0 0 15px #3b82f6', '0 0 5px #06b6d4'] :
+                      [
+                        `0 0 5px ${avatarMode === 'german' ? '#059669' : '#06b6d4'}`,
+                        `0 0 15px ${avatarMode === 'german' ? '#0ea5a3' : '#3b82f6'}`,
+                        `0 0 5px ${avatarMode === 'german' ? '#059669' : '#06b6d4'}`
+                      ] :
                       listening ?
-                      ['0 0 5px #10b981', '0 0 10px #10b981', '0 0 5px #10b981'] :
-                      '0 0 3px #06b6d4'
+                      [
+                        `0 0 5px ${avatarMode === 'german' ? '#0ea5a3' : '#10b981'}`,
+                        `0 0 10px ${avatarMode === 'german' ? '#10b981' : '#10b981'}`,
+                        `0 0 5px ${avatarMode === 'german' ? '#0ea5a3' : '#10b981'}`
+                      ] :
+                      `0 0 3px ${avatarMode === 'german' ? '#0ea5a3' : '#06b6d4'}`
                   }}
                   transition={{ duration: 0.5, repeat: (speaking || listening) ? Infinity : 0 }}
                 />
@@ -216,9 +225,9 @@ const AnimatedAvatar = ({ speaking, listening }) => {
             </div>
             
             {/* Enhanced Digital Display Eyes */}
-            <div className="absolute top-6 left-1/2 transform -translate-x-1/2 flex gap-3">
+      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 flex gap-3">
               <motion.div 
-                className="w-6 h-5 bg-gradient-to-br from-cyan-300 to-blue-500 rounded-lg border-2 border-blue-500 flex items-center justify-center shadow-lg"
+        className={`w-6 h-5 rounded-lg border-2 flex items-center justify-center shadow-lg ${avatarMode === 'german' ? 'bg-gradient-to-br from-emerald-300 to-teal-500 border-emerald-500' : 'bg-gradient-to-br from-cyan-300 to-blue-500 border-blue-500'}`}
                 animate={{ 
                   opacity: eyeState === 'blink' ? 0.3 : 1,
                   scaleY: eyeState === 'blink' ? 0.2 : 1,
@@ -240,7 +249,7 @@ const AnimatedAvatar = ({ speaking, listening }) => {
               </motion.div>
               
               <motion.div 
-                className="w-6 h-5 bg-gradient-to-br from-cyan-300 to-blue-500 rounded-lg border-2 border-blue-500 flex items-center justify-center shadow-lg"
+                className={`w-6 h-5 rounded-lg border-2 flex items-center justify-center shadow-lg ${avatarMode === 'german' ? 'bg-gradient-to-br from-emerald-300 to-teal-500 border-emerald-500' : 'bg-gradient-to-br from-cyan-300 to-blue-500 border-blue-500'}`}
                 animate={{ 
                   opacity: eyeState === 'blink' ? 0.3 : 1,
                   scaleY: eyeState === 'blink' ? 0.2 : 1,
@@ -264,7 +273,7 @@ const AnimatedAvatar = ({ speaking, listening }) => {
             
             {/* Enhanced Speaker Grille Mouth with Lip Movement */}
             <motion.div 
-              className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-10 h-6 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg border-2 border-gray-700 shadow-inner overflow-hidden"
+              className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 w-10 h-6 bg-gradient-to-br rounded-lg border-2 shadow-inner overflow-hidden ${avatarMode === 'german' ? 'from-gray-600 to-gray-800 border-emerald-700' : 'from-gray-600 to-gray-800 border-gray-700'}`}
               animate={{
                 borderColor: speaking ? 
                   ['#3b82f6', '#06b6d4', '#3b82f6'] :
@@ -445,7 +454,7 @@ const AnimatedAvatar = ({ speaking, listening }) => {
               <motion.div 
                 className="w-3 h-3 rounded-full"
                 style={{
-                  background: speaking ? '#f59e0b' : listening ? '#10b981' : '#6b7280'
+                  background: speaking ? (avatarMode === 'german' ? '#0ea5a3' : '#f59e0b') : listening ? '#10b981' : '#6b7280'
                 }}
                 animate={{
                   rotate: (speaking || listening) ? 360 : 0,
@@ -582,7 +591,7 @@ const AnimatedAvatar = ({ speaking, listening }) => {
       
       {/* Mode indicator */}
       <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-gray-500 font-medium capitalize">
-        {avatarMode} Mode
+        {avatarMode === 'german' ? 'German Robot' : `${avatarMode} Mode`}
       </div>
       
       {/* Switch hint */}
@@ -602,10 +611,10 @@ const MessageBubble = ({ message, isUser }) => (
   >
     <div
       className={`
-        max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-lg
+        max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-lg backdrop-blur-xl
         ${isUser 
-          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-md' 
-          : 'bg-white text-gray-800 border border-gray-200 rounded-bl-md shadow-sm'
+          ? 'bg-gradient-to-r from-blue-500/90 to-purple-600/90 text-white rounded-br-md border border-blue-300/30' 
+          : 'bg-white/20 text-white border border-white/30 rounded-bl-md shadow-xl'
         }
       `}
     >
@@ -626,6 +635,7 @@ const Assistant = () => {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [voiceEnabled, setVoiceEnabled] = useState(true)
   const [autoListen, setAutoListen] = useState(true)
+  const [language, setLanguage] = useState('en-US') // 'en-US' | 'ml-IN'
   const messagesEndRef = useRef(null)
   const recognitionRef = useRef(null)
   const synthesisRef = useRef(null)
@@ -633,15 +643,17 @@ const Assistant = () => {
   const recordedChunksRef = useRef([])
   const [micPermission, setMicPermission] = useState('unknown') // 'unknown' | 'granted' | 'denied'
   const [forceCloudSTT, setForceCloudSTT] = useState(false)
+  const [aiResponseQuality, setAiResponseQuality] = useState('high') // 'high' | 'medium' | 'fallback'
+  const [conversationSummary, setConversationSummary] = useState('')
 
-  // Enhanced AI Query function with improved responses and DEBUG LOGGING
+  // Enhanced AI Query function with improved responses and better error handling
   const queryAI = useCallback(async (prompt) => {
-    console.log('🤖 AI QUERY STARTED - DEBUG MODE')
+    console.log('🤖 ENHANCED AI QUERY STARTED')
     console.log('📝 Received prompt:', prompt)
     
     if (!prompt || !prompt.trim()) {
-      console.log('❌ Empty prompt received, aborting')
-      setError('❌ No message to process')
+      console.log('❌ Empty prompt received')
+      setError('❌ Please enter a message')
       return
     }
     
@@ -649,29 +661,53 @@ const Assistant = () => {
     setIsStreaming(true)
     setCurrentStreamContent('')
     
-    console.log('💬 Adding user message to chat...')
     // Add user message immediately
     setMessages(prev => [...prev, { text: prompt, isUser: true, timestamp: new Date() }])
     
     try {
-      console.log('🔄 Starting AI processing...')
-      // Try Gemini API first with better prompting
+      // Enhanced Gemini API implementation
       const geminiKey = import.meta.env.VITE_GEMINI_API_KEY
       
-  if (geminiKey && geminiKey !== 'your-gemini-api-key-here') {
-        console.log('🔑 Using Gemini API...')
-        const enhancedPrompt = `You are a highly empathetic and knowledgeable AI recovery coach and addiction counselor. \n\nUser's message: "${prompt}"\n\nPlease provide a thoughtful, supportive, and practical response that:\n- Shows genuine understanding and empathy\n- Offers specific, actionable advice or coping strategies\n- Uses encouraging but realistic language\n- Keeps the response between 2-4 sentences\n- Is appropriate for someone in addiction recovery\n- Acknowledges their feelings and validates their experience\n\nRespond with warmth, wisdom, and hope.`
+      if (geminiKey && geminiKey !== 'your-gemini-api-key-here') {
+        console.log('🔑 Using Gemini API with enhanced prompting...')
+        
+        const contextualPrompt = `You are an expert AI Recovery Coach and Addiction Counselor with deep knowledge of psychology, addiction recovery, and therapeutic techniques.
+
+CONVERSATION CONTEXT: ${messages.length > 0 ? `Previous messages in this conversation: ${messages.slice(-4).map(m => `${m.isUser ? 'User' : 'Coach'}: ${m.text}`).join(' | ')}` : 'This is the start of our conversation.'}
+
+USER'S CURRENT MESSAGE: "${prompt}"
+
+CONTEXT: This person is on their recovery journey and needs:
+- Empathetic understanding and validation
+- Practical, actionable advice
+- Hope and encouragement
+- Evidence-based coping strategies
+- Crisis support when needed
+
+RESPONSE GUIDELINES:
+1. Reference our conversation history if relevant
+2. Always acknowledge their feelings first
+3. Provide specific, practical advice they can use immediately
+4. Include recovery-focused strategies (mindfulness, grounding techniques, etc.)
+5. Use warm, encouraging but realistic language
+6. If they express crisis/suicidal thoughts, provide immediate resources
+7. Keep response 3-5 sentences, clear and actionable
+8. End with a supportive question or encouragement
+
+${language.startsWith('ml') ? 'Respond in Malayalam (ml-IN).' : 'Respond in English (en-US).'}
+
+Be their supportive companion who truly understands recovery challenges and remembers our ongoing conversation.`
 
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{
-              parts: [{ text: enhancedPrompt }]
+              parts: [{ text: contextualPrompt }]
             }],
             generationConfig: {
-              temperature: 0.8,
-              maxOutputTokens: 300,
+              temperature: 0.85,
+              maxOutputTokens: 400,
               topP: 0.9,
               topK: 40
             }
@@ -680,160 +716,147 @@ const Assistant = () => {
 
         if (response.ok) {
           const data = await response.json()
-          console.log('✅ Gemini API response received')
           const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text
           
-          if (aiResponse) {
-            console.log('🎯 AI response:', aiResponse)
-            // Simulate streaming effect
-            setCurrentStreamContent('')
-            const words = aiResponse.split(' ')
-            let currentText = ''
-            
-            for (let i = 0; i < words.length; i++) {
-              currentText += words[i] + ' '
-              setCurrentStreamContent(currentText.trim())
-              await new Promise(resolve => setTimeout(resolve, 50))
-            }
-            
-            console.log('✅ AI response streaming complete')
-            setIsStreaming(false)
-            setCurrentStreamContent('')
-            setMessages(prev => [...prev, { text: aiResponse, isUser: false, timestamp: new Date() }])
-            
-            // SPEAK THE RESPONSE
-            setTimeout(() => {
-              speakText(aiResponse)
-            }, 500)
+          if (aiResponse && aiResponse.trim()) {
+            console.log('✅ Gemini response received:', aiResponse)
+            setAiResponseQuality('high')
+            await streamResponse(aiResponse)
             return
           }
         } else {
-          console.log('❌ Gemini API failed, status:', response.status)
+          console.log('❌ Gemini API failed:', response.status)
+          const errorText = await response.text()
+          console.log('Error details:', errorText)
         }
       }
 
-      // Server AI fallback via our backend
+      // Enhanced fallback with local AI server
       try {
-        console.log('🌐 Trying server AI fallback at /api/coach/chat ...')
+        console.log('🌐 Trying enhanced server AI...')
         const serverRes = await fetch('/api/coach/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            // Send minimal conversation for now: last user prompt only
             messages: [
+              { 
+                role: 'system', 
+                content: 'You are a compassionate AI Recovery Coach. Provide supportive, practical advice for addiction recovery. Be empathetic, encouraging, and offer specific coping strategies.' 
+              },
               { role: 'user', content: prompt }
             ],
-            stream: false
+            stream: false,
+            max_tokens: 300,
+            temperature: 0.8
           })
         })
+        
         if (serverRes.ok) {
           const data = await serverRes.json()
-          const aiText = data?.choices?.[0]?.message?.content
+          const aiText = data?.choices?.[0]?.message?.content || data?.response
           if (aiText && aiText.trim()) {
-            console.log('✅ Server AI reply received')
-            // Simulate streaming effect
-            setCurrentStreamContent('')
-            const words = aiText.split(' ')
-            let currentText = ''
-            for (let i = 0; i < words.length; i++) {
-              currentText += words[i] + ' '
-              setCurrentStreamContent(currentText.trim())
-              await new Promise(resolve => setTimeout(resolve, 40))
-            }
-            setIsStreaming(false)
-            setCurrentStreamContent('')
-            setMessages(prev => [...prev, { text: aiText, isUser: false, timestamp: new Date() }])
-            setTimeout(() => { speakText(aiText) }, 400)
+            console.log('✅ Server AI response received')
+            setAiResponseQuality('medium')
+            await streamResponse(aiText)
             return
           }
-        } else {
-          const errTxt = await serverRes.text().catch(() => '')
-          console.log('❌ Server AI fallback failed:', serverRes.status, errTxt)
         }
       } catch (serverErr) {
-        console.log('🌐 Server AI call threw error:', serverErr?.message)
+        console.log('🌐 Server AI error:', serverErr.message)
       }
 
-      // Enhanced fallback responses with more comprehensive support
-      const enhancedKeywordResponses = {
-        'help': "I'm here with you every step of the way. Your courage to reach out shows incredible strength. Let's work through this together - what specific support do you need right now?",
-        
-        'sad': "I hear the pain in your words, and I want you to know that these feelings are valid and temporary. You've overcome difficult moments before, and you have that same strength within you now. What's one small thing that might bring you even a moment of comfort?",
-        
-        'angry': "Anger is a powerful emotion that shows you care deeply about something. Let's channel that energy constructively. Take three deep breaths with me, and remember - you have control over your next choice, no matter how intense this feeling is right now.",
-        
-        'anxious': "Anxiety can feel overwhelming, but you're not alone in this moment. Try the 5-4-3-2-1 grounding technique: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, and 1 you taste. You've navigated anxiety before, and you can do it again.",
-        
-        'craving': "Cravings are like storms - intense but temporary. This feeling will pass, and every moment you resist makes you stronger. What's your go-to coping strategy? If you don't have one, try calling someone, taking a cold shower, or doing 10 jumping jacks right now.",
-        
-        'relapse': "Recovery isn't a straight line, and this moment doesn't define your journey. You're human, and humans sometimes stumble. What matters is that you're here, reaching out, and ready to take the next step forward. That takes incredible courage.",
-        
-        'lonely': "Loneliness in recovery is common and challenging. Remember that reaching out to me shows you're not giving up on connection. Consider calling a friend, attending a meeting, or even just going somewhere with people around. You matter, and your presence matters to others.",
-        
-        'grateful': "Gratitude is such a powerful force in recovery. It's beautiful that you're recognizing the positive. What specific thing are you most grateful for today? Holding onto that feeling can be an anchor during tougher moments.",
-        
-        'thanks': "You're so welcome! Your willingness to engage in this process shows real commitment to your wellbeing. I'm honored to be part of your support system. Remember, I'm here whenever you need encouragement or guidance.",
-        
-        'scared': "Fear is understandable - change and growth can feel scary even when they're positive. What you're feeling is normal, and acknowledging it shows self-awareness. What's the smallest, safest step you could take right now toward what you want?",
-        
-        'progress': "Celebrating progress, no matter how small, is so important! Every positive step builds momentum for the next one. What specific progress are you noticing? Recognizing these wins helps rewire your brain for continued success.",
-        
-        'family': "Family relationships in recovery can be complex and emotional. Whether you're rebuilding trust, setting boundaries, or dealing with conflict, remember that you can only control your own actions and responses. What family situation is on your mind?"
-      }
-      
-      const lowerPrompt = prompt.toLowerCase()
-      let enhancedResponse = "Thank you for sharing that with me. Recovery is a journey that requires courage, and the fact that you're here engaging in this conversation shows your commitment to growth. Every day you choose healing is a victory worth celebrating. What feels most important for you to focus on right now?"
-      
-      // Check for multiple keywords and provide more nuanced responses
-      for (const [keyword, response] of Object.entries(enhancedKeywordResponses)) {
-        if (lowerPrompt.includes(keyword)) {
-          enhancedResponse = response
-          break
-        }
-      }
-      
-      // Special handling for questions
-      if (lowerPrompt.includes('?')) {
-        if (lowerPrompt.includes('how') || lowerPrompt.includes('what') || lowerPrompt.includes('why')) {
-          enhancedResponse = "That's a really thoughtful question. " + enhancedResponse + " I'd love to explore this further with you. What aspects of this feel most important or challenging for you right now?"
-        }
-      }
-      
-      // Simulate streaming for enhanced responses too
-      setCurrentStreamContent('')
-      const words = enhancedResponse.split(' ')
-      let currentText = ''
-      
-      for (let i = 0; i < words.length; i++) {
-        currentText += words[i] + ' '
-        setCurrentStreamContent(currentText.trim())
-        await new Promise(resolve => setTimeout(resolve, 60))
-      }
-      
-      setIsStreaming(false)
-      setCurrentStreamContent('')
-      setMessages(prev => [...prev, { text: enhancedResponse, isUser: false, timestamp: new Date() }])
-      
-      // SPEAK THE FALLBACK RESPONSE
-      setTimeout(() => {
-        speakText(enhancedResponse)
-      }, 500)
+      // Enhanced intelligent fallback responses based on sentiment analysis
+      const enhancedResponse = generateIntelligentFallback(prompt)
+      setAiResponseQuality('fallback')
+      await streamResponse(enhancedResponse)
       
     } catch (error) {
-      console.error('AI query failed:', error)
+      console.error('❌ AI query failed:', error)
       setIsStreaming(false)
       setCurrentStreamContent('')
       
-      const supportiveResponse = "I'm experiencing a technical issue, but I want you to know that your feelings and experiences are valid and important. Recovery is about persistence and self-compassion. Even in this moment, you're showing strength by reaching out. How are you feeling right now, and what support do you need?"
+      const errorResponse = "I'm experiencing some technical difficulties, but I'm still here for you. Recovery is a journey that requires courage, and reaching out shows your strength. How are you feeling right now, and what kind of support would help you most?"
       
-      setMessages(prev => [...prev, { text: supportiveResponse, isUser: false, timestamp: new Date() }])
-      
-      // SPEAK THE ERROR RESPONSE
-      setTimeout(() => {
-        speakText(supportiveResponse)
-      }, 500)
+      setMessages(prev => [...prev, { text: errorResponse, isUser: false, timestamp: new Date() }])
+      setTimeout(() => speakText(errorResponse), 500)
     }
-  }, [])
+  }, [language])
+
+  // Helper function to stream responses with better timing
+  const streamResponse = async (text) => {
+    setCurrentStreamContent('')
+    const words = text.split(' ')
+    let currentText = ''
+    
+    for (let i = 0; i < words.length; i++) {
+      currentText += words[i] + ' '
+      setCurrentStreamContent(currentText.trim())
+      await new Promise(resolve => setTimeout(resolve, 40)) // Faster streaming
+    }
+    
+    setIsStreaming(false)
+    setCurrentStreamContent('')
+    setMessages(prev => [...prev, { text: text, isUser: false, timestamp: new Date() }])
+    
+    // Speak the response
+    setTimeout(() => speakText(text), 300)
+  }
+
+  // Enhanced intelligent fallback with sentiment analysis
+  const generateIntelligentFallback = (prompt) => {
+    const lowerPrompt = prompt.toLowerCase()
+    
+    // Crisis detection
+    if (lowerPrompt.includes('suicide') || lowerPrompt.includes('kill myself') || lowerPrompt.includes('end it all')) {
+      return "I'm deeply concerned about you right now. Your life has value and you matter. Please reach out for immediate help: Call 988 (Suicide & Crisis Lifeline) or text HOME to 741741. You don't have to face this alone - there are people who want to help you through this difficult time."
+    }
+    
+    // Emotional state responses
+    if (lowerPrompt.includes('relapse') || lowerPrompt.includes('used') || lowerPrompt.includes('drank')) {
+      return "I hear you, and I want you to know that relapses don't erase your progress - they're often part of the recovery journey. What matters most is that you're reaching out now. Can you get to a safe place and call your sponsor or a trusted friend? Remember: this moment doesn't define you, your response to it does."
+    }
+    
+    if (lowerPrompt.includes('craving') || lowerPrompt.includes('urge') || lowerPrompt.includes('want to use')) {
+      return "Cravings are like waves - they feel overwhelming but they do pass. Try the HALT check: Are you Hungry, Angry, Lonely, or Tired? Address what you can immediately. Use grounding techniques: name 5 things you see, 4 you hear, 3 you feel. You've resisted cravings before, and you have that same strength right now."
+    }
+    
+    if (lowerPrompt.includes('anxious') || lowerPrompt.includes('anxiety') || lowerPrompt.includes('panic')) {
+      return "Anxiety in recovery is common and manageable. Try the 4-7-8 breathing technique: breathe in for 4, hold for 7, exhale for 8. Remind yourself: 'This feeling is temporary and I am safe.' What's one small thing you can do right now to feel more grounded?"
+    }
+    
+    if (lowerPrompt.includes('depressed') || lowerPrompt.includes('sad') || lowerPrompt.includes('hopeless')) {
+      return "I hear the pain in your words, and I want you to know that these feelings, while real and valid, are not permanent. Depression often lies to us about our worth and future. You've shown incredible strength by reaching out. What's one tiny step you could take today, even if it's just drinking a glass of water or stepping outside?"
+    }
+    
+    if (lowerPrompt.includes('angry') || lowerPrompt.includes('frustrated') || lowerPrompt.includes('mad')) {
+      return "Anger is a valid emotion, and it often signals that something important is happening. In recovery, anger can be redirected into positive action. Try physical release: go for a walk, do jumping jacks, or punch a pillow. What do you think your anger is trying to tell you right now?"
+    }
+    
+    if (lowerPrompt.includes('lonely') || lowerPrompt.includes('isolated') || lowerPrompt.includes('alone')) {
+      return "Loneliness in recovery is one of the hardest challenges, but you're not actually alone - you're here talking with me, which shows your strength. Consider reaching out to one person today, even with a simple text. Recovery communities, both online and offline, are full of people who understand exactly what you're experiencing."
+    }
+    
+    if (lowerPrompt.includes('grateful') || lowerPrompt.includes('thankful') || lowerPrompt.includes('appreciate')) {
+      return "Gratitude is such a powerful tool in recovery! It's wonderful that you're recognizing positive things in your life. Gratitude rewires our brains to notice more good things. What are three specific things you're grateful for today, no matter how small they might seem?"
+    }
+    
+    if (lowerPrompt.includes('motivation') || lowerPrompt.includes('inspire') || lowerPrompt.includes('encourage')) {
+      return "You're asking for motivation, which tells me you haven't given up - that's already a victory! Remember: recovery isn't about being perfect, it's about being persistent. Every day you choose healing over hurting is a day you're rewriting your story. What's one thing you can do today that your future self will thank you for?"
+    }
+    
+    // Support seeking
+    if (lowerPrompt.includes('help') || lowerPrompt.includes('support') || lowerPrompt.includes('need')) {
+      return "Asking for help is one of the bravest and strongest things you can do in recovery. You're not weak for needing support - you're human, and humans heal in community. What specific kind of support would be most helpful for you right now? Remember, there are people who want to help you succeed."
+    }
+    
+    // Progress and reflection
+    if (lowerPrompt.includes('progress') || lowerPrompt.includes('better') || lowerPrompt.includes('improving')) {
+      return "It's amazing that you're recognizing your progress! Recovery happens in small steps, and celebrating these wins - no matter how small - is crucial for building momentum. What specific changes have you noticed in yourself? Keep building on these positive changes, one day at a time."
+    }
+    
+    // Default supportive response
+    return "Thank you for sharing that with me. Recovery is a courageous journey, and the fact that you're here, reaching out and engaging in conversation, shows your commitment to healing. Every conversation, every moment of self-reflection, every small step forward matters. What's most important for you to focus on right now in your recovery journey?"
+  }
 
   // TEXT-TO-SPEECH FUNCTIONALITY
   const speakText = useCallback((text) => {
@@ -847,24 +870,29 @@ const Assistant = () => {
     console.log('🗣️ SPEAKING:', text)
     setIsSpeaking(true)
 
-    const utterance = new SpeechSynthesisUtterance(text)
+  const utterance = new SpeechSynthesisUtterance(text)
+  utterance.lang = language
     
     // Configure voice settings for better quality
     utterance.rate = 0.9
     utterance.pitch = 1.1
     utterance.volume = 0.8
     
-    // Try to use a female voice if available
+    // Try to choose a voice that matches the selected language
     const voices = window.speechSynthesis.getVoices()
-    const femaleVoice = voices.find(voice => 
-      voice.name.includes('Female') || 
-      voice.name.includes('Karen') || 
-      voice.name.includes('Samantha') ||
-      voice.name.includes('Zira')
-    )
-    if (femaleVoice) {
-      utterance.voice = femaleVoice
+    let chosenVoice = null
+    if (language.startsWith('ml')) {
+      chosenVoice = voices.find(v => (v.lang?.toLowerCase().startsWith('ml')))
     }
+    if (!chosenVoice) {
+      chosenVoice = voices.find(voice => 
+        voice.name.includes('Female') || 
+        voice.name.includes('Karen') || 
+        voice.name.includes('Samantha') ||
+        voice.name.includes('Zira')
+      )
+    }
+    if (chosenVoice) utterance.voice = chosenVoice
 
     utterance.onstart = () => {
       console.log('🎤 Speech started')
@@ -891,7 +919,7 @@ const Assistant = () => {
 
     synthesisRef.current = utterance
     window.speechSynthesis.speak(utterance)
-  }, [voiceEnabled, autoListen, micPermission, isListening])
+  }, [voiceEnabled, autoListen, micPermission, isListening, language])
 
   // Stop speaking
   const stopSpeaking = useCallback(() => {
@@ -909,16 +937,20 @@ const Assistant = () => {
     scrollToBottom()
   }, [messages, currentStreamContent])
 
-  // Welcome message
+  // Enhanced welcome message with more personalization
   useEffect(() => {
     if (!loading && user) {
-      const welcomeMessage = `Hi ${user.user_metadata?.full_name || 'there'}! I'm your AI Recovery Coach. How are you feeling today?`
+      const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'there'
+      const timeOfDay = new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'
+      
+      const welcomeMessage = `Good ${timeOfDay}, ${userName}! I'm your AI Recovery Coach, here to support you 24/7 on your journey. Whether you need encouragement, coping strategies, or just someone to listen, I'm here for you. How are you feeling today, and what would be most helpful for you right now?`
+      
       setMessages([{ text: welcomeMessage, isUser: false, timestamp: new Date() }])
       
       // Speak welcome message after a brief delay
       setTimeout(() => {
         speakText(welcomeMessage)
-      }, 1500)
+      }, 2000)
     }
   }, [user, loading, speakText])
 
@@ -950,121 +982,120 @@ const Assistant = () => {
     }
   }, [])
 
-  // COMPLETELY ENHANCED Speech Recognition Setup - FIXED VERSION 3.0
+  // ENHANCED Speech Recognition Setup with better reliability
   const setupSpeechRecognition = useCallback(() => {
     if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
-      setError('🚫 Speech recognition not supported. Falling back to cloud STT...')
+      setError('🚫 Speech recognition not supported. Using cloud backup...')
       return null
     }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     const recognition = new SpeechRecognition()
     
-    // OPTIMIZED CONFIGURATION for better reliability
-    recognition.lang = 'en-US'
+    // OPTIMIZED CONFIGURATION for maximum reliability
+    recognition.lang = language
     recognition.interimResults = true
-    recognition.maxAlternatives = 3
+    recognition.maxAlternatives = 1
     recognition.continuous = false
     
     let timeoutId
-    let hasDetectedAnySound = false
     let hasDetectedSpeech = false
-  let finalTranscript = ''
-  let interimTranscript = ''
-  let hasSubmitted = false
+    let finalTranscript = ''
+    let hasSubmitted = false
     
-  recognition.onstart = () => {
-      console.log('🎤 Speech recognition started successfully')
+    recognition.onstart = () => {
+      console.log('🎤 Enhanced speech recognition started')
       setIsListening(true)
-      setError('🎤 Listening... Speak clearly!')
-      hasDetectedAnySound = false
+      setError('🎤 Listening... Speak clearly and naturally!')
       hasDetectedSpeech = false
       finalTranscript = ''
-      interimTranscript = ''
+      hasSubmitted = false
       
-      // Stop any current speech when starting to listen
+      // Stop any current speech
       if (isSpeaking) {
         stopSpeaking()
       }
       
-      // Shorter timeout for better responsiveness
+      // Timeout for no speech detected
       timeoutId = setTimeout(() => {
         if (!hasDetectedSpeech) {
-          console.log('⏰ No speech detected, stopping recognition')
+          console.log('⏰ No speech detected within timeout')
           recognition.stop()
-          setError('🔇 No speech detected. Try speaking louder!')
+          setError('🔇 No speech detected. Please try again and speak louder.')
         }
-      }, 7000)
+      }, 8000) // Extended timeout
     }
     
-    // Audio detection
     recognition.onsoundstart = () => {
-      console.log('🔊 Audio detected')
-      hasDetectedAnySound = true
-      setError('🔊 Sound detected! Continue speaking...')
-      
+      console.log('🔊 Sound detected - processing audio')
       if (timeoutId) {
         clearTimeout(timeoutId)
         timeoutId = null
       }
+      setError('🔊 Sound detected! Continue speaking...')
     }
     
-    // Speech detection
     recognition.onspeechstart = () => {
-      console.log('🗣️ Speech detected')
+      console.log('🗣️ Speech detected - analyzing')
       hasDetectedSpeech = true
-      setError('🗣️ Speech detected! Keep talking...')
+      setError('🗣️ Speech detected! Keep talking naturally...')
     }
     
-    // CRITICAL: Process speech results with immediate feedback
+    // ENHANCED result processing with better accuracy
     recognition.onresult = (event) => {
-      console.log('📝 Processing speech results...', event.results)
-      let newInterimTranscript = ''
+      console.log('📝 Processing speech results...', event.results.length)
+      let interimTranscript = ''
       let newFinalTranscript = ''
       
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i]
-        const transcript = result[0].transcript
+        const transcript = result[0].transcript.trim()
+        const confidence = result[0].confidence
+        
+        console.log(`Result ${i}: "${transcript}" (confidence: ${confidence})`)
         
         if (result.isFinal) {
           newFinalTranscript += transcript
-          console.log('✅ Final transcript:', transcript)
+          console.log('✅ Final result:', transcript)
         } else {
-          newInterimTranscript += transcript
-          console.log('⏳ Interim transcript:', transcript)
+          interimTranscript += transcript
         }
       }
       
-      // Show interim results
-      if (newInterimTranscript !== interimTranscript) {
-        interimTranscript = newInterimTranscript
+      // Show interim results immediately
+      if (interimTranscript) {
         setError(`Hearing: "${interimTranscript}"`)
-        setCurrentMessage(interimTranscript) // Show interim in input field
+        setCurrentMessage(interimTranscript)
       }
       
-      // Process final result immediately (once per session)
-      if (newFinalTranscript.trim()) {
-        finalTranscript = newFinalTranscript.trim()
+      // Process final results with confidence check
+      if (newFinalTranscript && !hasSubmitted) {
+        finalTranscript = newFinalTranscript
         console.log('✅ Processing final transcript:', finalTranscript)
-        setCurrentMessage(finalTranscript)
-        setError('✅ Speech recognized! Processing your message...')
         
-        // Stop recognition and process immediately
-        recognition.stop()
-        
-        // Send to AI with minimal delay
-        setTimeout(() => {
-          if (!hasSubmitted) {
-            hasSubmitted = true
-            console.log('🤖 Sending to AI:', finalTranscript)
-            queryAI(finalTranscript)
-            setCurrentMessage('') // Clear input after sending
-          }
-        }, 300)
+        // Check if transcript is meaningful (not just noise)
+        if (finalTranscript.length > 2 && finalTranscript !== 'undefined') {
+          setCurrentMessage(finalTranscript)
+          setError('✅ Speech recognized! Processing your message...')
+          
+          recognition.stop()
+          hasSubmitted = true
+          
+          // Send to AI with slight delay
+          setTimeout(() => {
+            if (finalTranscript.trim()) {
+              console.log('🤖 Sending to AI:', finalTranscript)
+              queryAI(finalTranscript)
+              setCurrentMessage('')
+            }
+          }, 500)
+        } else {
+          setError('🔇 Speech unclear. Please try again.')
+        }
       }
     }
     
-    // Enhanced error handling
+    // Enhanced error handling with specific solutions
     recognition.onerror = (event) => {
       console.error('❌ Speech recognition error:', event.error)
       setIsListening(false)
@@ -1075,18 +1106,26 @@ const Assistant = () => {
       }
       
       const errorSolutions = {
-        'network': '🌐 Network error. Check your internet connection.',
-        'not-allowed': '🚫 Microphone access denied. Please allow microphone access and try again.',
-        'no-speech': '🔇 No speech detected. Speak louder and closer to the microphone.',
-        'audio-capture': '🎤 Cannot access microphone. Check if another app is using it.',
-        'service-not-allowed': '🚫 Speech service blocked. Check browser settings.',
-        'bad-grammar': '🗣️ Speech unclear. Try speaking more clearly.',
-        'aborted': '⏹️ Speech recognition stopped.',
-        'language-not-supported': '🌐 English not supported on this device.',
-        'no-match': '❓ No speech understood. Speak more clearly.'
+        'network': '🌐 Network error. Please check your internet connection and try again.',
+        'not-allowed': '🚫 Microphone access denied. Please allow microphone permission in your browser settings.',
+        'no-speech': '🔇 No speech detected. Please speak louder and closer to your microphone.',
+        'audio-capture': '🎤 Cannot access microphone. Please check if another app is using it.',
+        'service-not-allowed': '🚫 Speech service blocked. Please check your browser settings.',
+        'bad-grammar': '🗣️ Speech unclear. Please try speaking more slowly and clearly.',
+        'aborted': '⏹️ Speech recognition was stopped.',
+        'language-not-supported': '🌐 Selected language not supported. Switching to English.',
+        'no-match': '❓ Could not understand speech. Please try again with clearer pronunciation.'
       }
       
-      setError(errorSolutions[event.error] || `❌ Speech error: ${event.error}`)
+      const errorMessage = errorSolutions[event.error] || `❌ Speech error: ${event.error}. Please try again.`
+      setError(errorMessage)
+      
+      // Auto-retry for certain errors
+      if (event.error === 'no-speech' || event.error === 'aborted') {
+        setTimeout(() => {
+          setError('🎤 Ready to listen again. Click the microphone to try once more.')
+        }, 2000)
+      }
     }
     
     recognition.onend = () => {
@@ -1098,20 +1137,20 @@ const Assistant = () => {
         timeoutId = null
       }
       
-      // Auto-process if we have a final transcript and haven't already submitted
-      if (finalTranscript.trim() && !hasSubmitted) {
-        console.log('🔄 Auto-processing final transcript on end:', finalTranscript)
-        setError('🤖 Processing your message...')
+      // Final processing if we have good transcript
+      if (finalTranscript.trim() && !hasSubmitted && finalTranscript.length > 2) {
+        console.log('🔄 Final processing on end:', finalTranscript)
         hasSubmitted = true
+        setError('🤖 Processing your message...')
         queryAI(finalTranscript)
         setCurrentMessage('')
-      } else if (!finalTranscript.trim() && !hasDetectedSpeech) {
-        setError('🎤 Ready to listen again. Click the microphone to try again.')
+      } else if (!hasDetectedSpeech) {
+        setError('🎤 Click the microphone to try speaking again.')
       }
     }
     
     return recognition
-  }, [isStreaming, isSpeaking, stopSpeaking])
+  }, [isStreaming, isSpeaking, stopSpeaking, language, queryAI])
 
   // Cloud STT fallback using our server proxy (Deepgram)
   const startCloudSTT = useCallback(async () => {
@@ -1130,7 +1169,7 @@ const Assistant = () => {
         try {
           const blob = new Blob(recordedChunksRef.current, { type: 'audio/webm;codecs=opus' })
           const arrayBuffer = await blob.arrayBuffer()
-          const resp = await fetch('/api/stt/deepgram', {
+          const resp = await fetch(`/api/stt/deepgram?lang=${encodeURIComponent(language)}`, {
             method: 'POST',
             headers: { 'Content-Type': 'audio/webm;codecs=opus' },
             body: arrayBuffer
@@ -1166,7 +1205,7 @@ const Assistant = () => {
     } catch (e) {
       setError(`🎤 Cloud STT init failed: ${e.message}`)
     }
-  }, [queryAI])
+  }, [queryAI, language])
 
   // Initialize speech recognition
   useEffect(() => {
@@ -1247,13 +1286,11 @@ const Assistant = () => {
         audioContext.close()
         setAudioLevel(0)
         
+        // Relaxed gating: never block on low levels; warn and continue
         if (!audioDetected && maxLevel < 2) {
-          setError('🎤 Microphone connected but very low audio levels detected. Please check your microphone volume and speak louder.')
-          return
-        }
-        
-        if (maxLevel < 5) {
-          setError('⚠️ Low audio levels detected. Please speak louder and closer to your microphone.')
+          setError('🎤 Very low input detected. Continuing anyway—please speak closer to the mic.')
+        } else if (maxLevel < 5) {
+          setError('🎤 Low audio levels detected. Please speak louder or closer to your microphone.')
         } else {
           setError('✅ Microphone test successful! Starting speech recognition...')
         }
@@ -1261,7 +1298,7 @@ const Assistant = () => {
         // Start speech recognition after test
         setTimeout(() => {
           try {
-            if (recognitionRef.current) {
+            if (recognitionRef.current && !language.startsWith('ml')) {
               try { recognitionRef.current.start() }
               catch (_e) { startCloudSTT() }
             } else { startCloudSTT() }
@@ -1349,24 +1386,41 @@ const Assistant = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative">
-      {/* Light Animated Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl animate-pulse"></div>
-      </div>
-      
+    <OppenheimerBackground>
       <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Language Selector (English / Malayalam) */}
+        <div className="max-w-4xl mx-auto mb-4 flex justify-end">
+          <div className="inline-flex bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden shadow-sm">
+            <button
+              className={`px-3 py-1.5 text-sm ${language === 'en-US' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-white'}`}
+              onClick={() => setLanguage('en-US')}
+            >EN</button>
+            <button
+              className={`px-3 py-1.5 text-sm ${language === 'ml-IN' ? 'bg-emerald-600 text-white' : 'text-gray-700 hover:bg-white'}`}
+              onClick={() => setLanguage('ml-IN')}
+            >ML</button>
+          </div>
+        </div>
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8 bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
+          className="text-center mb-8 bg-white/10 backdrop-blur-xl rounded-2xl p-6 shadow-2xl border border-white/20"
         >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-            AI Recovery Coach
-          </h1>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              AI Recovery Coach
+            </h1>
+            <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+              aiResponseQuality === 'high' ? 'bg-green-500/20 text-green-200 border border-green-400/30' :
+              aiResponseQuality === 'medium' ? 'bg-yellow-500/20 text-yellow-200 border border-yellow-400/30' :
+              'bg-blue-500/20 text-blue-200 border border-blue-400/30'
+            }`}>
+              {aiResponseQuality === 'high' ? '🔥 Premium AI' : 
+               aiResponseQuality === 'medium' ? '⚡ Server AI' : 
+               '🧠 Smart Fallback'}
+            </div>
+          </div>
           <p className="text-lg text-blue-700 font-medium">
             Your compassionate companion on the journey to recovery
           </p>
@@ -1374,13 +1428,14 @@ const Assistant = () => {
 
         {/* Main Chat Interface */}
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/30 overflow-hidden">
+          <div className="bg-white/15 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
             
             {/* Avatar Section */}
-            <div className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 p-8 text-center">
+            <div className="bg-gradient-to-r from-blue-500/80 via-purple-500/80 to-indigo-600/80 p-8 text-center">
               <AnimatedAvatar 
                 speaking={isSpeaking || isStreaming}
                 listening={isListening}
+                locale={language}
               />
               
               <motion.h3 
@@ -1388,7 +1443,11 @@ const Assistant = () => {
                 animate={{ scale: (isListening || isSpeaking) ? [1, 1.02, 1] : 1 }}
                 transition={{ duration: 0.5, repeat: (isListening || isSpeaking) ? Infinity : 0 }}
               >
-                {isSpeaking ? 'Speaking to you...' : isListening ? 'I\'m listening carefully...' : 'AI Recovery Coach'}
+                {isSpeaking 
+                  ? (language.startsWith('ml') ? 'ഞാൻ സംസാരിക്കുന്നു...' : 'Speaking to you...') 
+                  : isListening 
+                  ? (language.startsWith('ml') ? 'ഞാൻ ശ്രദ്ധയോടെ കേൾക്കുന്നു...' : 'I\'m listening carefully...') 
+                  : (language.startsWith('ml') ? 'എ.ഐ. റിക്കവറി കോച്ച്' : 'AI Recovery Coach')}
               </motion.h3>
               
               {/* Stop Speaking Button */}
@@ -1419,7 +1478,7 @@ const Assistant = () => {
             </div>
 
             {/* Chat Messages */}
-            <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-white/80 to-blue-50/60">
+            <div className="h-96 overflow-y-auto p-6 space-y-4 bg-white/5">
               {messages.map((message, index) => (
                 <MessageBubble key={index} message={message.text} isUser={message.isUser} />
               ))}
@@ -1431,7 +1490,7 @@ const Assistant = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-start mb-4"
                 >
-                  <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-white text-gray-800 border border-gray-200 rounded-bl-md shadow-sm">
+                  <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-white/20 text-white border border-white/30 rounded-bl-md shadow-xl backdrop-blur-xl">
                     <p className="text-sm leading-relaxed">{currentStreamContent}</p>
                     <motion.div 
                       className="mt-2 w-2 h-2 bg-blue-500 rounded-full"
@@ -1450,20 +1509,54 @@ const Assistant = () => {
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`mx-6 mb-4 p-4 rounded-xl border ${
-                  error.includes('✅') ? 'bg-green-50 border-green-200 text-green-700' :
-                  error.includes('🔊') || error.includes('🗣️') ? 'bg-blue-50 border-blue-200 text-blue-700' :
-                  error.includes('🎤') ? 'bg-yellow-50 border-yellow-200 text-yellow-700' :
-                  'bg-red-50 border-red-200 text-red-700'
+                className={`mx-6 mb-4 p-4 rounded-xl border backdrop-blur-xl ${
+                  error.includes('✅') ? 'bg-green-500/10 border-green-400/30 text-green-200' :
+                  error.includes('🔊') || error.includes('🗣️') ? 'bg-blue-500/10 border-blue-400/30 text-blue-200' :
+                  error.includes('🎤') ? 'bg-yellow-500/10 border-yellow-400/30 text-yellow-100' :
+                  'bg-red-500/10 border-red-400/30 text-red-200'
                 }`}
               >
                 <p className="text-sm font-medium">{error}</p>
               </motion.div>
             )}
 
-            {/* Input Section */}
-            <div className="p-6 bg-gradient-to-r from-blue-50/80 via-white/70 to-purple-50/80 border-t border-blue-200/40">
-              <div className="flex items-center space-x-4">
+              {/* Enhanced Input Section */}
+              <div className="p-6 bg-white/5 backdrop-blur-xl border-t border-white/10">
+                {/* Conversation Controls */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <motion.button
+                      onClick={() => {
+                        const transcript = messages.map(m => 
+                          `${m.isUser ? 'You' : 'AI Coach'} (${new Date(m.timestamp).toLocaleTimeString()}): ${m.text}`
+                        ).join('\n\n')
+                        navigator.clipboard.writeText(transcript)
+                        setError('✅ Conversation copied to clipboard!')
+                        setTimeout(() => setError(''), 2000)
+                      }}
+                      className="px-3 py-2 text-xs bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white transition-all duration-200"
+                    >
+                      📋 Export Chat
+                    </motion.button>
+                    
+                    <motion.button
+                      onClick={() => {
+                        setMessages([])
+                        setError('🗑️ Conversation cleared!')
+                        setTimeout(() => setError(''), 2000)
+                      }}
+                      className="px-3 py-2 text-xs bg-red-500/20 hover:bg-red-500/30 border border-red-400/30 rounded-lg text-red-200 transition-all duration-200"
+                    >
+                      🗑️ Clear
+                    </motion.button>
+                  </div>
+                  
+                  <div className="text-xs text-gray-300">
+                    {messages.length} messages • {new Date().toLocaleTimeString()}
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-4">
                 {/* Enhanced Voice Input Button */}
                 <motion.button
                   onClick={isListening ? handleStop : handleStart}
@@ -1515,7 +1608,7 @@ const Assistant = () => {
                     onChange={(e) => setCurrentMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                     placeholder="Type your message or click the microphone to speak..."
-                    className="w-full px-4 py-3 rounded-xl border border-blue-200/60 focus:ring-2 focus:ring-blue-400 focus:border-transparent bg-white/95 backdrop-blur-sm transition-all duration-200 text-gray-800 placeholder-gray-500"
+                    className="w-full px-4 py-3 rounded-xl border border-white/30 focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/50 bg-white/15 backdrop-blur-xl transition-all duration-200 text-white placeholder-gray-200 shadow-lg"
                     disabled={isListening || isStreaming}
                   />
                 </div>
@@ -1568,34 +1661,39 @@ const Assistant = () => {
                     console.log('🧪 TESTING AI FUNCTION DIRECTLY')
                     queryAI('Testing AI function directly - please respond with a simple hello message')
                   }}
-                  className="px-4 py-2 text-sm bg-red-100 hover:bg-red-200 border border-red-300 rounded-full transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md hover:scale-105"
+                  className="px-4 py-2 text-sm bg-red-500/20 hover:bg-red-500/30 border border-red-400/30 rounded-full transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-xl"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   disabled={isListening || isStreaming}
                 >
                   <span>🧪</span>
-                  <span className="font-medium text-red-700">DEBUG AI</span>
+                  <span className="font-medium text-red-200">DEBUG AI</span>
                 </motion.button>
                 
                 {[
-                  { text: 'How am I doing?', prompt: 'Can you help me assess how I am doing with my recovery today?', icon: '📊' },
                   { text: 'I need help now', prompt: 'I am struggling right now and need immediate support and encouragement', icon: '🆘' },
-                  { text: 'Give me motivation', prompt: 'Please give me some motivation and encouragement to stay strong in my recovery', icon: '💪' },
-                  { text: 'Coping strategies', prompt: 'What are some effective coping strategies I can use when I feel triggered or stressed?', icon: '🧘' },
-                  { text: 'I feel grateful', prompt: 'I want to share something I am grateful for in my recovery journey', icon: '🙏' },
                   { text: 'Managing cravings', prompt: 'I am experiencing cravings and need help managing them effectively', icon: '🌊' },
-                  { text: 'TEST AI', prompt: 'Hello, this is a test message to check if AI responses are working properly', icon: '🧪' }
+                  { text: 'Feeling anxious', prompt: 'I am feeling anxious and need coping strategies to calm down', icon: '😰' },
+                  { text: 'Relapse concerns', prompt: 'I am worried about relapsing or had a slip and need guidance', icon: '💔' },
+                  { text: 'Motivation boost', prompt: 'I need motivation and encouragement to stay strong in my recovery', icon: '💪' },
+                  { text: 'Loneliness support', prompt: 'I am feeling lonely and isolated in my recovery journey', icon: '🤗' },
+                  { text: 'Gratitude sharing', prompt: 'I want to share something I am grateful for in my recovery', icon: '🙏' },
+                  { text: 'Progress check', prompt: 'Help me reflect on my recovery progress and next steps', icon: '📈' },
+                  { text: 'Anger management', prompt: 'I am feeling angry and need help managing these emotions', icon: '😡' },
+                  { text: 'Family issues', prompt: 'I am dealing with family relationship challenges in recovery', icon: '👨‍👩‍👧‍👦' },
+                  { text: 'Sleep problems', prompt: 'I am having trouble sleeping and it is affecting my recovery', icon: '😴' },
+                  { text: 'Work stress', prompt: 'I am stressed about work and worried it might affect my recovery', icon: '💼' }
                 ].map((quickAction, index) => (
                   <motion.button
                     key={index}
                     onClick={() => queryAI(quickAction.prompt)}
-                    className="px-4 py-2 text-sm bg-white/80 hover:bg-white/95 border border-blue-200/60 rounded-full transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md hover:scale-105"
+                    className="px-4 py-2 text-sm bg-white/20 hover:bg-white/30 border border-white/30 rounded-full transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-xl"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     disabled={isListening || isStreaming}
                   >
                     <span>{quickAction.icon}</span>
-                    <span className="font-medium text-gray-700">{quickAction.text}</span>
+                    <span className="font-medium text-white">{quickAction.text}</span>
                   </motion.button>
                 ))}
               </div>
@@ -1603,7 +1701,7 @@ const Assistant = () => {
           </div>
         </div>
       </div>
-    </div>
+    </OppenheimerBackground>
   )
 }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Play, Pause, RefreshCw, Target, Clock, Dumbbell, AlertCircle, Heart, Eye, PlayCircle, ExternalLink } from 'lucide-react'
-import { getYouTubeEmbedUrl, getYouTubeThumbnail } from '../utils/youtube'
+import { getYouTubeEmbedUrl, getYouTubeThumbnail, isValidYouTubeId } from '../utils/youtube'
 import { FALLBACK_EXERCISE_VIDEOS as SHARED_FALLBACK_VIDEOS } from '../services/exerciseVideos'
 import GlassmorphismCard from '../components/GlassmorphismCard'
 
@@ -44,6 +44,7 @@ const Exercise = () => {
   const [showVideoPlayer, setShowVideoPlayer] = useState(false)
   const [videoPlayerUrl, setVideoPlayerUrl] = useState('')
   const [usingFallback, setUsingFallback] = useState(false)
+  const [ytItems, setYtItems] = useState([])
 
   // Exercise categories updated for video content
   const categories = {
@@ -76,7 +77,25 @@ const Exercise = () => {
   // Fetch featured videos for the sidebar
   const loadFeaturedVideos = async () => {
     try {
-      // Use shared fallback videos and prioritize current category
+      // Try YouTube first
+      const qMap = {
+        'stress-relief': 'yoga for stress relief breathing for anxiety',
+        'quick-energy': 'quick cardio workout no equipment',
+        'mindful-movement': 'tai chi qigong mindful movement beginner',
+        'strength': 'beginner bodyweight strength no equipment'
+      }
+      const q = qMap[category] || 'beginner workout'
+      const resp = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}&max=12&category=${encodeURIComponent(category)}`)
+      if (resp.ok) {
+        const data = await resp.json()
+        const list = (data.items || [])
+        setYtItems(list)
+        // feature top 8
+        setFeaturedVideos(list.slice(0, 8))
+        setUsingFallback(false)
+        return
+      }
+      // fallback to curated
       const pool = SHARED_FALLBACK_VIDEOS
       const byCategory = pool.filter(v => v.category === category)
       const list = (byCategory.length > 0 ? byCategory : pool).slice(0, 8)
@@ -89,27 +108,39 @@ const Exercise = () => {
     }
   }
 
-  // Fetch a random exercise video based on category
+  // Fetch a random exercise video based on category with basic validation
   const fetchRandomVideo = async () => {
     setLoading(true)
     setError('')
     
     try {
-  // Use shared fallback videos
-  const categoryVideos = SHARED_FALLBACK_VIDEOS.filter(v => v.category === category)
-  const fallbackPool = categoryVideos.length > 0 ? categoryVideos : SHARED_FALLBACK_VIDEOS
-      const randomVideo = fallbackPool[Math.floor(Math.random() * fallbackPool.length)]
-      
-      setCurrentVideo(randomVideo)
-      setUsingFallback(true)
+      // Prefer YouTube API items if available
+      let pool = ytItems && ytItems.length ? ytItems : null
+      if (pool) {
+        const candidate = pool[Math.floor(Math.random() * pool.length)]
+        setCurrentVideo(candidate)
+        setUsingFallback(false)
+      } else {
+        const categoryVideos = SHARED_FALLBACK_VIDEOS.filter(v => v.category === category)
+        const fallbackPool = categoryVideos.length > 0 ? categoryVideos : SHARED_FALLBACK_VIDEOS
+        // Try up to 5 picks to avoid invalid/unavailable IDs
+        let pick = null
+        for (let i = 0; i < 5; i++) {
+          const candidate = fallbackPool[Math.floor(Math.random() * fallbackPool.length)]
+          if (candidate?.youtube_id && isValidYouTubeId(candidate.youtube_id)) { pick = candidate; break }
+        }
+        const randomVideo = pick || fallbackPool[0]
+        setCurrentVideo(randomVideo)
+        setUsingFallback(true)
+      }
     } catch (err) {
       console.error('Error fetching random video:', err)
       
   // Fallback to built-in videos
-  const categoryVideos = SHARED_FALLBACK_VIDEOS.filter(v => v.category === category)
-  const fallbackPool = categoryVideos.length > 0 ? categoryVideos : SHARED_FALLBACK_VIDEOS
-      const randomVideo = fallbackPool[Math.floor(Math.random() * fallbackPool.length)]
-      
+      const categoryVideos = SHARED_FALLBACK_VIDEOS.filter(v => v.category === category)
+      const fallbackPool = categoryVideos.length > 0 ? categoryVideos : SHARED_FALLBACK_VIDEOS
+      const randomVideo = fallbackPool.find(v => v.youtube_id && isValidYouTubeId(v.youtube_id)) || fallbackPool[0]
+
       setCurrentVideo(randomVideo)
       setUsingFallback(true)
       setError('Using built-in videos. Database connection failed.')
@@ -120,6 +151,10 @@ const Exercise = () => {
 
   // Play video in embedded player
   const playVideo = (video) => {
+    if (!video?.youtube_id || !isValidYouTubeId(video.youtube_id)) {
+      fetchRandomVideo()
+      return
+    }
     setVideoPlayerUrl(getYouTubeEmbedUrl(video.youtube_id, true, true))
     setShowVideoPlayer(true)
   }
@@ -211,6 +246,8 @@ const Exercise = () => {
                     src={currentVideo.thumbnail_url || getYouTubeThumbnail(currentVideo.youtube_id)}
                     alt={currentVideo.title}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                   
                   {/* Play Overlay */}
@@ -347,6 +384,8 @@ const Exercise = () => {
                         src={video.thumbnail_url || getYouTubeThumbnail(video.youtube_id)}
                         alt={video.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        loading="lazy"
+                        decoding="async"
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-200 flex items-center justify-center">
                         <PlayCircle className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />

@@ -1,31 +1,31 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react'
+import React, { useEffect, useState, lazy, Suspense, startTransition } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import Navbar from './components/Navbar'
 import ErrorBoundary from './components/ErrorBoundary'
-import Login from './pages/Login'
-import Landing from './pages/Landing'
-import Dashboard from './pages/Dashboard'
+const Login = lazy(() => import('./pages/Login'))
+const Landing = lazy(() => import('./pages/Landing'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
 import Tracker from './pages/Tracker'
-import Tips from './pages/Tips'
-import Library from './pages/Library'
-import Emergency from './pages/Emergency'
-import Community from './pages/Community'
-import Profile from './pages/Profile'
-import Assistant from './pages/Assistant'
-import DinoGame from './pages/DinoGame'
-import Resources from './pages/Resources'
-import ScriptAnalyzer from './pages/ScriptAnalyzer'
-import Jokes from './pages/Jokes'
-import DatabaseTest from './pages/DatabaseTest'
-import TypingTest from './pages/TypingTest'
+const Tips = lazy(() => import('./pages/Tips'))
+const Library = lazy(() => import('./pages/Library'))
+const Emergency = lazy(() => import('./pages/Emergency'))
+const Community = lazy(() => import('./pages/Community'))
+const Profile = lazy(() => import('./pages/Profile'))
+const Assistant = lazy(() => import('./pages/Assistant'))
+const DinoGame = lazy(() => import('./pages/DinoGame'))
+const Resources = lazy(() => import('./pages/Resources'))
+const ScriptAnalyzer = lazy(() => import('./pages/ScriptAnalyzer'))
+const Jokes = lazy(() => import('./pages/Jokes'))
+const DatabaseTest = lazy(() => import('./pages/DatabaseTest'))
+const TypingTest = lazy(() => import('./pages/TypingTest'))
 // Lazy-load heavy pages to reduce initial bundle
 const Breathing = lazy(() => import('./pages/Breathing'))
 const MentorDemo = lazy(() => import('./pages/MentorDemo'))
 const VoiceMentor = lazy(() => import('./pages/VoiceMentor'))
 const Exercise = lazy(() => import('./pages/Exercise'))
 const MassiveExercise = lazy(() => import('./pages/MassiveExercise'))
-import AuthCallback from './pages/AuthCallback'
+const AuthCallback = lazy(() => import('./pages/AuthCallback'))
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './components/Toast'
 import LoadingSpinner from './components/LoadingSpinner'
@@ -40,16 +40,20 @@ function App() {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setLoading(false)
+      startTransition(() => {
+        setSession(session)
+        setLoading(false)
+      })
     })
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setLoading(false)
+      startTransition(() => {
+        setSession(session)
+        setLoading(false)
+      })
     })
 
     // Initialize PWA features
@@ -90,14 +94,14 @@ function App() {
                 <Navbar />
                 <main className="pb-16 md:pb-0">
                   <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/dashbord" element={<Dashboard />} />
-                    <Route path="/assistant" element={<Assistant />} />
-                    <Route path="/script-analyzer" element={<ScriptAnalyzer />} />
-                    <Route path="/jokes" element={<Jokes />} />
-                    <Route path="/typing-test" element={<TypingTest />} />
-                    <Route path="/database-test" element={<DatabaseTest />} />
+                    <Route path="/" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Dashboard /></Suspense>} />
+                    <Route path="/dashboard" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Dashboard /></Suspense>} />
+                    <Route path="/dashbord" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Dashboard /></Suspense>} />
+                    <Route path="/assistant" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Assistant /></Suspense>} />
+                    <Route path="/script-analyzer" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><ScriptAnalyzer /></Suspense>} />
+                    <Route path="/jokes" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Jokes /></Suspense>} />
+                    <Route path="/typing-test" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><TypingTest /></Suspense>} />
+                    <Route path="/database-test" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><DatabaseTest /></Suspense>} />
                     <Route
                       path="/breathing"
                       element={
@@ -132,10 +136,10 @@ function App() {
                       }
                     />
                     <Route path="/tracker" element={<Tracker />} />
-                    <Route path="/tips" element={<Tips />} />
-                    <Route path="/library" element={<Library />} />
-                    <Route path="/diary" element={<DinoGame />} />
-                    <Route path="/resources" element={<Resources />} />
+                    <Route path="/tips" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Tips /></Suspense>} />
+                    <Route path="/library" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Library /></Suspense>} />
+                    <Route path="/diary" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><DinoGame /></Suspense>} />
+                    <Route path="/resources" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Resources /></Suspense>} />
                     <Route
                       path="/exercise/massive"
                       element={
@@ -152,29 +156,29 @@ function App() {
                         </Suspense>
                       }
                     />
-                    <Route path="/emergency" element={<Emergency />} />
-                    <Route path="/community" element={<Community />} />
+                    <Route path="/emergency" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Emergency /></Suspense>} />
+                    <Route path="/community" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Community /></Suspense>} />
                     { /* Coach page removed; use Assistant instead */ }
                     { /* RapidCoach removed */ }
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route path="/profile" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Profile /></Suspense>} />
+                    <Route path="/auth/callback" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><AuthCallback /></Suspense>} />
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                   </Routes>
                 </main>
               </>
             ) : (
               <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/landing.html" element={<Landing />} />
+                <Route path="/" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Landing /></Suspense>} />
+                <Route path="/landing.html" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Landing /></Suspense>} />
                 {/* Login routes and any nested paths under /login */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/login/*" element={<Login />} />
+                <Route path="/login" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Login /></Suspense>} />
+                <Route path="/login/*" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Login /></Suspense>} />
                 {/* Common mistype alias */}
-                <Route path="/loginpage" element={<Login />} />
+                <Route path="/loginpage" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Login /></Suspense>} />
                 {/* Explicit deep-link aliases */}
-                <Route path="/login/community" element={<Login />} />
+                <Route path="/login/community" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Login /></Suspense>} />
                 
-                <Route path="/assistant" element={<Assistant />} />
+                    <Route path="/assistant" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Assistant /></Suspense>} />
                 <Route
                   path="/breathing"
                   element={
@@ -224,13 +228,13 @@ function App() {
                     </Suspense>
                   }
                 />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route path="/diary" element={<DinoGame />} />
-                <Route path="/emergency" element={<Emergency />} />
-                <Route path="/resources" element={<Resources />} />
-                <Route path="/jokes" element={<Jokes />} />
-                <Route path="/database-test" element={<DatabaseTest />} />
-                <Route path="/script-analyzer" element={<ScriptAnalyzer />} />
+                <Route path="/auth/callback" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><AuthCallback /></Suspense>} />
+                <Route path="/diary" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><DinoGame /></Suspense>} />
+                <Route path="/emergency" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Emergency /></Suspense>} />
+                <Route path="/resources" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Resources /></Suspense>} />
+                <Route path="/jokes" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Jokes /></Suspense>} />
+                <Route path="/database-test" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><DatabaseTest /></Suspense>} />
+                <Route path="/script-analyzer" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><ScriptAnalyzer /></Suspense>} />
                 { /* Coach page removed; use Assistant instead */ }
                 { /* RapidCoach removed */ }
                 {/* Catch-all back to landing */}

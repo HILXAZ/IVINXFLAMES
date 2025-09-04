@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { db } from '../lib/supabase'
 import { streakUtils, statsUtils, dateUtils } from '../lib/utils'
@@ -12,8 +12,16 @@ import {
 import LoadingSpinner from '../components/LoadingSpinner'
 import LapseRescueMode from '../components/LapseRescueMode'
 import AnimatedBackground from '../components/AnimatedBackground'
+import OppenheimerBackground from '../components/OppenheimerBackground'
 import WonderButton, { ActionButton, HeartButton, MagicButton } from '../components/WonderButton'
 import WeatherAssistant from '../components/WeatherAssistant'
+import WeatherMini from '../components/WeatherMini'
+import WeatherForecast from '../components/WeatherForecast'
+import TimeWidget from '../components/TimeWidget'
+import QuickStatsWidget from '../components/QuickStatsWidget'
+import ActivitySuggestions from '../components/ActivitySuggestions'
+import SimpleTimeWidget from '../components/SimpleTimeWidget'
+import SupportMap from '../components/SupportMap'
 import GlassmorphismCard from '../components/GlassmorphismCard'
 
 const Dashboard = () => {
@@ -25,44 +33,75 @@ const Dashboard = () => {
   const [selectedHabit, setSelectedHabit] = useState(null)
   const [showLapseRescue, setShowLapseRescue] = useState(false)
   const [error, setError] = useState(null)
+  const [mode, setMode] = useState('modern') // 'modern' | 'classic'
+  const [showSupportMap, setShowSupportMap] = useState(false)
+
+  // Persist mode across sessions
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('dashboardMode')
+      if (saved === 'modern' || saved === 'classic') setMode(saved)
+    } catch (_) {}
+  }, [])
+  useEffect(() => {
+    try { localStorage.setItem('dashboardMode', mode) } catch (_) {}
+  }, [mode])
 
   useEffect(() => {
     if (user) {
-      loadDashboardData()
+      startTransition(() => {
+        loadDashboardData()
+      })
     }
   }, [user])
 
   const loadDashboardData = async () => {
     try {
-      setError(null)
+      startTransition(() => {
+        setError(null)
+      })
       const [habitsData, badgesData] = await Promise.all([
         db.getHabits(user.id),
         db.getUserBadges(user.id)
       ])
 
-      setHabits(habitsData || [])
-      setBadges(badgesData || [])
+      startTransition(() => {
+        setHabits(habitsData || [])
+        setBadges(badgesData || [])
+      })
 
       if (habitsData && habitsData.length > 0) {
         const primaryHabit = habitsData[0]
-        setSelectedHabit(primaryHabit)
+        startTransition(() => {
+          setSelectedHabit(primaryHabit)
+        })
         
         const logs = await db.getHabitLogs(primaryHabit.id)
-        setHabitLogs(logs || [])
+        startTransition(() => {
+          setHabitLogs(logs || [])
+        })
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error)
-      setError('Failed to load dashboard data. Please check your connection and try again.')
+      startTransition(() => {
+        setError('Failed to load dashboard data. Please check your connection and try again.')
+      })
     } finally {
-      setLoading(false)
+      startTransition(() => {
+        setLoading(false)
+      })
     }
   }
 
   const handleHabitSelect = async (habit) => {
-    setSelectedHabit(habit)
+    startTransition(() => {
+      setSelectedHabit(habit)
+    })
     try {
       const logs = await db.getHabitLogs(habit.id)
-      setHabitLogs(logs || [])
+      startTransition(() => {
+        setHabitLogs(logs || [])
+      })
     } catch (error) {
       console.error('Error loading habit logs:', error)
     }
@@ -81,7 +120,9 @@ const Dashboard = () => {
       
       // Reload logs
       const logs = await db.getHabitLogs(selectedHabit.id)
-      setHabitLogs(logs || [])
+      startTransition(() => {
+        setHabitLogs(logs || [])
+      })
     } catch (error) {
       console.error('Error logging habit:', error)
     }
@@ -104,12 +145,14 @@ const Dashboard = () => {
           className="text-center py-12"
         >
           <AlertTriangle className="mx-auto h-12 w-12 text-red-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Dashboard Error</h3>
-          <p className="text-gray-500 mb-6">{error}</p>
+          <h3 className="text-lg font-medium text-white mb-2">Dashboard Error</h3>
+          <p className="text-white/70 mb-6">{error}</p>
           <button
             onClick={() => {
-              setError(null)
-              setLoading(true)
+              startTransition(() => {
+                setError(null)
+                setLoading(true)
+              })
               loadDashboardData()
             }}
             className="btn-primary"
@@ -130,8 +173,8 @@ const Dashboard = () => {
           className="text-center py-12"
         >
           <Target className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No habits tracked yet</h3>
-          <p className="text-gray-500 mb-6">Start your journey by creating your first habit tracker.</p>
+          <h3 className="text-lg font-medium text-white mb-2">No habits tracked yet</h3>
+          <p className="text-white/70 mb-6">Start your journey by creating your first habit tracker.</p>
           <a
             href="/tracker"
             className="btn-primary inline-flex items-center space-x-2"
@@ -154,23 +197,124 @@ const Dashboard = () => {
   const isLoggedToday = todayLog && todayLog.value > 0
 
   return (
-    <AnimatedBackground variant="recovery">
+    <OppenheimerBackground>
       <div className="max-w-7xl mx-auto p-2 sm:p-4 lg:p-6 xl:p-8 pb-20 md:pb-8">
         {/* Welcome Header - Responsive */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 sm:mb-8 bg-white/30 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/20 shadow-2xl"
+          className="mb-6 sm:mb-8 bg-white/15 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/20 shadow-2xl"
         >
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent mb-2 sm:mb-3">
-            Welcome back! 🌟
-          </h1>
-          <p className="text-gray-700 text-sm sm:text-base lg:text-lg">
-            Here's your amazing progress overview for today.
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-1 sm:mb-2">
+                Welcome back! 🌟 [ENHANCED v2.0]
+              </h1>
+              <p className="text-white/90 text-sm sm:text-base lg:text-lg">
+                Here's your amazing progress overview with new weather features!
+              </p>
+            </div>
+            {/* Mode toggle */}
+            <div className="inline-flex self-start md:self-auto bg-white/20 backdrop-blur rounded-lg p-1 border border-white/30 shadow-sm">
+              <button
+                className={`px-3 py-1.5 text-sm rounded-md transition-all ${mode === 'modern' ? 'bg-emerald-500 text-white shadow' : 'text-white/90 hover:bg-white/20'}`}
+                onClick={() => setMode('modern')}
+              >
+                Modern
+              </button>
+              <button
+                className={`px-3 py-1.5 text-sm rounded-md transition-all ${mode === 'classic' ? 'bg-emerald-500 text-white shadow' : 'text-white/90 hover:bg-white/20'}`}
+                onClick={() => setMode('classic')}
+              >
+                Classic
+              </button>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Weather Assistant - Mobile optimized */}
+        {/* TEST: New Enhanced Components - Modern Mode */}
+        {mode === 'modern' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-6 sm:mb-8 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-2xl p-6"
+        >
+          <h2 className="text-white text-2xl font-bold mb-4 flex items-center">
+            🌤️ Enhanced Weather Dashboard - ACTIVE!
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-white/10 rounded-lg p-4 text-center">
+              <h3 className="text-white font-semibold mb-2">Weather Forecast</h3>
+              <p className="text-white/70 text-sm">5-day detailed forecast</p>
+            </div>
+            <div className="bg-white/10 rounded-lg p-4 text-center">
+              <h3 className="text-white font-semibold mb-2">Time Widget</h3>
+              <p className="text-white/70 text-sm">Real-time progress tracking</p>
+            </div>
+            <div className="bg-white/10 rounded-lg p-4 text-center">
+              <h3 className="text-white font-semibold mb-2">Quick Stats</h3>
+              <p className="text-white/70 text-sm">Recovery metrics</p>
+            </div>
+          </div>
+        </motion.div>
+        )}
+
+        {/* WEATHER FEATURES SECTION - Dedicated Section */}
+        {mode === 'modern' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-6 sm:mb-8"
+        >
+          <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 rounded-2xl p-6 mb-6">
+            <h2 className="text-white text-xl font-bold mb-4 flex items-center">
+              🌦️ Weather & Environmental Support
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <WeatherForecast />
+              <ActivitySuggestions />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TimeWidget />
+            <QuickStatsWidget />
+          </div>
+        </motion.div>
+        )}
+
+        {/* Quick strip: Weather + key stats + Support Map */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 sm:mb-6 flex flex-wrap items-center gap-2"
+        >
+          <WeatherMini />
+          <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl border border-white/20 px-3 py-2 shadow-sm text-xs text-white/90">
+            <TrendingUp className="h-4 w-4 text-cyan-400" />
+            <span><strong>{currentStreak}</strong> day streak</span>
+          </div>
+          <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl border border-white/20 px-3 py-2 shadow-sm text-xs text-white/90">
+            <Award className="h-4 w-4 text-emerald-400" />
+            <span>Best <strong>{longestStreak}</strong></span>
+          </div>
+          <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl border border-white/20 px-3 py-2 shadow-sm text-xs text-white/90">
+            <Target className="h-4 w-4 text-purple-400" />
+            <span><strong>{totalDays}</strong> total</span>
+          </div>
+          <button
+            onClick={() => setShowSupportMap(true)}
+            className="ml-auto sm:ml-0 px-3 py-2 rounded-xl border border-blue-300/40 bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 text-xs shadow-sm"
+            title="Find nearby support"
+          >
+            <Users className="inline-block h-4 w-4 mr-1 align-text-bottom" />
+            Support map
+          </button>
+        </motion.div>
+
+        {/* Weather Assistant - shown in modern mode */}
+        {mode === 'modern' && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -179,6 +323,96 @@ const Dashboard = () => {
         >
           <WeatherAssistant />
         </motion.div>
+        )}
+
+        {/* Classic Mode panel */}
+        {mode === 'classic' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-6 sm:mb-8"
+        >
+          <GlassmorphismCard variant="hero" intensity="strong" className="p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">
+                ☀️ Classic Dashboard
+              </h2>
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-white/80">
+                <Sun className="w-4 h-4" />
+                <span>{new Date().toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+              {/* Weather + suggestion */}
+              <div className="lg:col-span-2">
+                <WeatherAssistant />
+              </div>
+
+              {/* Classic quick tiles */}
+              <div className="grid grid-cols-2 gap-3">
+                <a href="/breathing" className="p-3 rounded-xl border bg-white/15 border-white/20 hover:bg-white/25 transition-all flex items-center gap-3">
+                  <Wind className="w-5 h-5 text-blue-400" />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Breathing</div>
+                    <div className="text-xs text-white/70">Calm in 60s</div>
+                  </div>
+                </a>
+                <a href="/tips" className="p-3 rounded-xl border bg-white/15 border-white/20 hover:bg-white/25 transition-all flex items-center gap-3">
+                  <Coffee className="w-5 h-5 text-amber-400" />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Pomodoro</div>
+                    <div className="text-xs text-white/70">Quick focus</div>
+                  </div>
+                </a>
+                <a href="/resources" className="p-3 rounded-xl border bg-white/15 border-white/20 hover:bg-white/25 transition-all flex items-center gap-3">
+                  <Compass className="w-5 h-5 text-emerald-400" />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Resources</div>
+                    <div className="text-xs text-white/70">Learn & grow</div>
+                  </div>
+                </a>
+                <a href="/assistant" className="p-3 rounded-xl border bg-white/15 border-white/20 hover:bg-white/25 transition-all flex items-center gap-3">
+                  <Headphones className="w-5 h-5 text-purple-400" />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Voice Coach</div>
+                    <div className="text-xs text-white/70">Talk now</div>
+                  </div>
+                </a>
+                <a href="/tips" className="p-3 rounded-xl border bg-white/15 border-white/20 hover:bg-white/25 transition-all flex items-center gap-3">
+                  <CloudRain className="w-5 h-5 text-sky-400" />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Rainy Day</div>
+                    <div className="text-xs text-white/70">Indoor tips</div>
+                  </div>
+                </a>
+                <a href="/mind-balance" className="p-3 rounded-xl border bg-white/15 border-white/20 hover:bg-white/25 transition-all flex items-center gap-3">
+                  <Moon className="w-5 h-5 text-indigo-400" />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Wind Down</div>
+                    <div className="text-xs text-white/70">Night routine</div>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            {/* Enhanced widgets for classic mode */}
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-400/30">
+              <h3 className="text-white text-lg font-bold mb-4 flex items-center">
+                🌤️ Weather & Time Features
+              </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TimeWidget />
+                <ActivitySuggestions />
+              </div>
+            </div>
+            <div className="mt-4">
+              <WeatherForecast />
+            </div>
+          </GlassmorphismCard>
+        </motion.div>
+        )}
 
         {/* Wellness & Entertainment Hub - New Feature Section */}
         <motion.div
@@ -189,7 +423,7 @@ const Dashboard = () => {
         >
           <GlassmorphismCard variant="hero" intensity="strong" className="p-4 sm:p-6 lg:p-8">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+              <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
                 🌟 Wellness & Entertainment Hub
               </h2>
               <motion.div
@@ -215,8 +449,8 @@ const Dashboard = () => {
                   <div className="p-2 bg-yellow-500/30 rounded-lg">
                     <Smile className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700">Jokes & Humor</span>
-                  <span className="text-xs text-gray-600">Lift your mood</span>
+                  <span className="text-xs sm:text-sm font-semibold text-white">Jokes & Humor</span>
+                  <span className="text-xs text-white/70">Lift your mood</span>
                 </div>
               </motion.a>
 
@@ -231,8 +465,8 @@ const Dashboard = () => {
                   <div className="p-2 bg-green-500/30 rounded-lg">
                     <Gamepad2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700">Dino Game</span>
-                  <span className="text-xs text-gray-600">Brain exercise</span>
+                  <span className="text-xs sm:text-sm font-semibold text-white">Dino Game</span>
+                  <span className="text-xs text-white/70">Brain exercise</span>
                 </div>
               </motion.a>
 
@@ -247,8 +481,8 @@ const Dashboard = () => {
                   <div className="p-2 bg-blue-500/30 rounded-lg">
                     <Wind className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700">Breathing</span>
-                  <span className="text-xs text-gray-600">Calm & focus</span>
+                  <span className="text-xs sm:text-sm font-semibold text-white">Breathing</span>
+                  <span className="text-xs text-white/70">Calm & focus</span>
                 </div>
               </motion.a>
 
@@ -263,8 +497,8 @@ const Dashboard = () => {
                   <div className="p-2 bg-purple-500/30 rounded-lg">
                     <Volume2 className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700">AI Assistant</span>
-                  <span className="text-xs text-gray-600">Voice support</span>
+                  <span className="text-xs sm:text-sm font-semibold text-white">AI Assistant</span>
+                  <span className="text-xs text-white/70">Voice support</span>
                 </div>
               </motion.a>
 
@@ -279,8 +513,8 @@ const Dashboard = () => {
                   <div className="p-2 bg-pink-500/30 rounded-lg">
                     <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600" />
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700">Community</span>
-                  <span className="text-xs text-gray-600">Connect & share</span>
+                  <span className="text-xs sm:text-sm font-semibold text-white">Community</span>
+                  <span className="text-xs text-white/70">Connect & share</span>
                 </div>
               </motion.a>
 
@@ -295,8 +529,8 @@ const Dashboard = () => {
                   <div className="p-2 bg-indigo-500/30 rounded-lg">
                     <Brain className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600" />
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700">Mind Balance</span>
-                  <span className="text-xs text-gray-600">Mental wellness</span>
+                  <span className="text-xs sm:text-sm font-semibold text-white">Mind Balance</span>
+                  <span className="text-xs text-white/70">Mental wellness</span>
                 </div>
               </motion.a>
 
@@ -315,8 +549,8 @@ const Dashboard = () => {
                   >
                     <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
                   </motion.div>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700">Exercise</span>
-                  <span className="text-xs text-gray-600">Stay active</span>
+                  <span className="text-xs sm:text-sm font-semibold text-white">Exercise</span>
+                  <span className="text-xs text-white/70">Stay active</span>
                 </div>
               </motion.a>
 
@@ -338,8 +572,8 @@ const Dashboard = () => {
                   >
                     <Book className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
                   </motion.div>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700">Tips & Wisdom</span>
-                  <span className="text-xs text-gray-600">Daily motivation</span>
+                  <span className="text-xs sm:text-sm font-semibold text-white">Tips & Wisdom</span>
+                  <span className="text-xs text-white/70">Daily motivation</span>
                 </div>
               </motion.a>
             </div>
@@ -399,7 +633,7 @@ const Dashboard = () => {
           transition={{ delay: 0.2 }}
           className="mb-4 sm:mb-6"
         >
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-white/90 mb-2">
             Select Habit to View
           </label>
           <select
@@ -428,12 +662,12 @@ const Dashboard = () => {
       >
         <GlassmorphismCard variant="hero" intensity="strong" className="p-4 sm:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-4">
-            <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+            <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
               Today's Progress: {selectedHabit?.name}
             </h2>
             {isLoggedToday && (
               <motion.div 
-                className="flex items-center text-emerald-600"
+                className="flex items-center text-emerald-400"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.5, type: "spring" }}
@@ -482,7 +716,7 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-              <p className="text-emerald-600 font-semibold text-lg mb-4 sm:mb-0">
+              <p className="text-emerald-400 font-semibold text-lg mb-4 sm:mb-0">
                 Great job! You've successfully completed today's goal. 🎉
               </p>
               
@@ -516,9 +750,9 @@ const Dashboard = () => {
               <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-blue-600" />
             </motion.div>
             <div className="ml-3 sm:ml-4">
-              <p className="text-xs sm:text-sm font-medium text-gray-700">Current Streak</p>
+              <p className="text-xs sm:text-sm font-medium text-white/80">Current Streak</p>
               <motion.p 
-                className="text-lg sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+                className="text-lg sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.5, type: "spring" }}
@@ -539,9 +773,9 @@ const Dashboard = () => {
               <Award className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-emerald-600" />
             </motion.div>
             <div className="ml-3 sm:ml-4">
-              <p className="text-xs sm:text-sm font-medium text-gray-700">Best Streak</p>
+              <p className="text-xs sm:text-sm font-medium text-white/80">Best Streak</p>
               <motion.p 
-                className="text-lg sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent"
+                className="text-lg sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.6, type: "spring" }}
@@ -562,9 +796,9 @@ const Dashboard = () => {
               <Target className="h-6 w-6 text-purple-600" />
             </motion.div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-700">Total Days</p>
+              <p className="text-sm font-medium text-white/80">Total Days</p>
               <motion.p 
-                className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
+                className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.8, type: "spring" }}
@@ -585,7 +819,7 @@ const Dashboard = () => {
       >
         <GlassmorphismCard variant="hero" intensity="strong" className="p-4 sm:p-6 lg:p-8">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
               🌈 Today's Mood & Reflection
             </h3>
             <motion.div
@@ -599,7 +833,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Mood Selection */}
             <div className="space-y-3 sm:space-y-4">
-              <h4 className="text-sm sm:text-base font-semibold text-gray-700">How are you feeling today?</h4>
+              <h4 className="text-sm sm:text-base font-semibold text-white/90">How are you feeling today?</h4>
               <div className="grid grid-cols-5 gap-2 sm:gap-3">
                 {[
                   { emoji: '😢', mood: 'sad', color: 'from-blue-400 to-blue-600' },
@@ -626,7 +860,7 @@ const Dashboard = () => {
             
             {/* Quick Reflection */}
             <div className="space-y-3 sm:space-y-4">
-              <h4 className="text-sm sm:text-base font-semibold text-gray-700">Quick Reflection</h4>
+              <h4 className="text-sm sm:text-base font-semibold text-white/90">Quick Reflection</h4>
               <div className="grid grid-cols-1 gap-2 sm:gap-3">
                 {[
                   { icon: '🎯', text: 'Set intention for today', action: () => window.location.href = '/tracker' },
@@ -636,13 +870,13 @@ const Dashboard = () => {
                 ].map((item, index) => (
                   <motion.button
                     key={index}
-                    className="flex items-center p-2 sm:p-3 bg-white/30 backdrop-blur-sm rounded-lg border border-white/20 hover:border-white/40 transition-all duration-300 text-left"
+                    className="flex items-center p-2 sm:p-3 bg-white/15 backdrop-blur-sm rounded-lg border border-white/20 hover:border-white/30 transition-all duration-300 text-left"
                     whileHover={{ scale: 1.02, x: 5 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={item.action}
                   >
                     <span className="text-lg mr-3">{item.icon}</span>
-                    <span className="text-xs sm:text-sm font-medium text-gray-700">{item.text}</span>
+                    <span className="text-xs sm:text-sm font-medium text-white/90">{item.text}</span>
                   </motion.button>
                 ))}
               </div>
@@ -665,8 +899,8 @@ const Dashboard = () => {
                 <Sparkles className="h-4 w-4 text-indigo-600" />
               </motion.div>
               <div>
-                <h5 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1">💭 Daily Wisdom</h5>
-                <p className="text-xs sm:text-sm text-gray-600 italic">
+                <h5 className="text-xs sm:text-sm font-semibold text-white/90 mb-1">💭 Daily Wisdom</h5>
+                <p className="text-xs sm:text-sm text-white/70 italic">
                   "Every small step forward is a victory worth celebrating. Your journey of recovery is unique and valuable."
                 </p>
               </div>
@@ -683,7 +917,7 @@ const Dashboard = () => {
           transition={{ delay: 0.4 }}
           className="card"
         >
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Weekly Progress</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Weekly Progress</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={weeklyData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -708,7 +942,7 @@ const Dashboard = () => {
           transition={{ delay: 0.5 }}
           className="card"
         >
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Streak Trend</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-4">Streak Trend</h3>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={weeklyData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -742,7 +976,7 @@ const Dashboard = () => {
           transition={{ delay: 0.6 }}
           className="card"
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Achievements</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Recent Achievements</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {badges.slice(0, 6).map((userBadge) => (
               <div
@@ -772,7 +1006,7 @@ const Dashboard = () => {
         onClose={() => setShowLapseRescue(false)}
       />
       </div>
-    </AnimatedBackground>
+    </OppenheimerBackground>
   )
 }
 

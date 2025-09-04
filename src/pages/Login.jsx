@@ -17,6 +17,14 @@ const Login = () => {
   const { signIn, signUp, signInWithGoogle, resendConfirmation } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+
+  // Clear form fields when switching between login/signup
+  const switchMode = () => {
+    setIsLogin(!isLogin)
+    setEmail('')
+    setPassword('')
+    setName('')
+  }
   // Detect embedded/webview contexts where Google blocks OAuth (shows 403)
   const isEmbeddedEnv = useMemo(() => {
     if (typeof window === 'undefined') return false
@@ -505,6 +513,10 @@ const Login = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required={!isLogin}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
                   className="w-full px-4 py-3 rounded-xl text-lg font-semibold"
                   style={{
                     background: 'rgba(255, 255, 255, 0.95)',
@@ -524,6 +536,10 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
                 className="w-full px-4 py-3 rounded-xl text-lg font-semibold"
                 style={{
                   background: 'rgba(255, 255, 255, 0.95)',
@@ -542,6 +558,10 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="new-password"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
                 className="w-full px-4 py-3 rounded-xl text-lg font-semibold"
                 style={{
                   background: 'rgba(255, 255, 255, 0.95)',
@@ -650,7 +670,7 @@ const Login = () => {
           <div className="mt-8 space-y-4">
             <div className="text-center">
               <button
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={switchMode}
                 className="text-lg font-semibold transition-colors duration-300"
                 style={{ color: chineseColors.accent }}
               >
