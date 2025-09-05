@@ -5,7 +5,10 @@
 Your addiction control web app is now **LIVE** and accessible worldwide!
 
 ### 🌐 **LIVE PRODUCTION URL:**
-**https://addiction-3mtulkcpj-hilxazs-projects.vercel.app**
+**https://ivinflamex-addiction-control.vercel.app**
+
+### ✅ **CUSTOM URL CONFIGURED:**
+Your website is now accessible at the custom URL you requested!
 
 ### ⚠️ **IMPORTANT NOTE:**
 The previous URL `https://ivinflamex-addiction-control.vercel.app/` is no longer active.
@@ -56,7 +59,7 @@ To unlock AI and advanced features, set environment variables in Vercel:
 
 ### 📱 **Access Your Website:**
 
-**Desktop:** Open https://addiction-3mtulkcpj-hilxazs-projects.vercel.app in any browser
+**Desktop:** Open https://ivinflamex-addiction-control.vercel.app in any browser
 **Mobile:** Works perfectly on phones and tablets
 **PWA Install:** Users can install it as an app from their browser
 
@@ -89,7 +92,7 @@ To unlock AI and advanced features, set environment variables in Vercel:
 
 Your addiction control and recovery platform is now **LIVE** and ready to help users worldwide. The website is professionally hosted with enterprise-grade infrastructure, completely free of charge.
 
-**Website URL:** https://addiction-3mtulkcpj-hilxazs-projects.vercel.app
+**Website URL:** https://ivinflamex-addiction-control.vercel.app
 
 Share this link with anyone who needs support with addiction recovery, habit tracking, or wellness goals. Your platform is now making a real difference in people's lives! 🌟
 
