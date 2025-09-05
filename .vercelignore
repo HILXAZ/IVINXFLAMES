@@ -16,3 +16,11 @@ dist
 Thumbs.db
 server/node_modules
 api-server/node_modules
+
+# Prevent any authentication redirects
+auth/
+login/
+signin/
+.vercel/
+*.auth
+*.login
