@@ -60,7 +60,8 @@ const DinoGame = () => {
   // Save high score to backend
   const saveHighScore = useCallback(async (newScore) => {
     try {
-      await fetch('http://localhost:5050/api/v1/dino/score', {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'https://ivinnsibiflamex.netlify.app/api/v1';
+      await fetch(`${apiBase}/dino/score`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ score: newScore, timestamp: new Date().toISOString() })
@@ -73,7 +74,8 @@ const DinoGame = () => {
   // Load high scores from backend
   const loadHighScores = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:5050/api/v1/dino/leaderboard');
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'https://ivinnsibiflamex.netlify.app/api/v1';
+      const response = await fetch(`${apiBase}/dino/leaderboard`);
       const data = await response.json();
       if (data.highScore && data.highScore > highScore) {
         setHighScore(data.highScore);
@@ -92,7 +94,8 @@ const DinoGame = () => {
   // Load leaderboard from backend
   const loadLeaderboard = async () => {
     try {
-      const response = await fetch('http://localhost:5050/api/v1/dino/leaderboard');
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'https://ivinnsibiflamex.netlify.app/api/v1';
+      const response = await fetch(`${apiBase}/dino/leaderboard`);
       if (response.ok) {
         const data = await response.json();
         setLeaderboard(data);
@@ -104,7 +107,8 @@ const DinoGame = () => {
 
   const saveScore = async (finalScore) => {
     try {
-      const response = await fetch('http://localhost:5050/api/v1/dino/score', {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || 'https://ivinnsibiflamex.netlify.app/api/v1';
+      const response = await fetch(`${apiBase}/dino/score`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -25,7 +25,7 @@ import {
 import { scriptAnalyzerService } from '../services/scriptAnalyzerService'
 
 // Minimal client for the new diary ("diary") API
-const API_BASE = import.meta.env.VITE_DIARY_API_URL || 'http://localhost:5050/api/v1'
+const API_BASE = import.meta.env.VITE_DIARY_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://ivinnsibiflamex.netlify.app/api/v1'
 
 const Diary = () => {
   const [userId, setUserId] = useState('')

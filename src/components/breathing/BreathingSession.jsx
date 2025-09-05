@@ -50,7 +50,7 @@ function modeToPattern(mode, custom) {
   return custom || { inhale: 4, hold: 0, exhale: 6 }
 }
 
-export default function BreathingSession({ user, apiBase = 'http://localhost:5174' }) {
+export default function BreathingSession({ user, apiBase = import.meta.env.VITE_API_BASE_URL || 'https://ivinnsibiflamex.netlify.app/api' }) {
   const userId = user?.id || user?.user?.id
   const { session } = useAuth()
   const { push } = useToast()
