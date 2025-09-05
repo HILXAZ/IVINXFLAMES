@@ -3,20 +3,41 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+console.log('Environment check:', {
+  hasUrl: !!supabaseUrl,
+  hasKey: !!supabaseAnonKey,
+  url: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'missing',
+  keyStart: supabaseAnonKey ? `${supabaseAnonKey.substring(0, 10)}...` : 'missing'
+})
+
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.')
+  console.error('Missing Supabase environment variables:', {
+    VITE_SUPABASE_URL: supabaseUrl ? 'present' : 'missing',
+    VITE_SUPABASE_ANON_KEY: supabaseAnonKey ? 'present' : 'missing'
+  })
+  
+  // In development, throw error. In production, create a mock client
+  if (import.meta.env.DEV) {
+    throw new Error('Missing Supabase environment variables. Please check your .env file.')
+  } else {
+    console.warn('Running in production without Supabase configuration - some features will be limited')
+  }
 }
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce',
-    redirectTo: `${window.location.origin}/auth/callback`
+// Create Supabase client with fallback for missing env vars
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder-key',
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`
+    }
   }
-})
+)
 
 // Database helper functions
 export const db = {
