@@ -89,158 +89,61 @@ function App() {
         <ToastProvider>
         <Router>
           <div className="min-h-screen bg-gray-50">
-            {session ? (
-              <>
-                <Navbar />
-                <main className="pb-16 md:pb-0">
-                  <Routes>
-                    <Route path="/" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Dashboard /></Suspense>} />
-                    <Route path="/dashboard" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Dashboard /></Suspense>} />
-                    <Route path="/dashbord" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Dashboard /></Suspense>} />
-                    <Route path="/assistant" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Assistant /></Suspense>} />
-                    <Route path="/script-analyzer" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><ScriptAnalyzer /></Suspense>} />
-                    <Route path="/jokes" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Jokes /></Suspense>} />
-                    <Route path="/typing-test" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><TypingTest /></Suspense>} />
-                    <Route path="/database-test" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><DatabaseTest /></Suspense>} />
-                    <Route
-                      path="/breathing"
-                      element={
-                        <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                          <Breathing />
-                        </Suspense>
-                      }
-                    />
-                    <Route
-                      path="/exercise"
-                      element={
-                        <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                          <Exercise />
-                        </Suspense>
-                      }
-                    />
-                    <Route
-                      path="/mentor"
-                      element={
-                        <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                          <MentorDemo />
-                        </Suspense>
-                      }
-                    />
-                    
-                    <Route
-                      path="/voice"
-                      element={
-                        <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                          <VoiceMentor />
-                        </Suspense>
-                      }
-                    />
-                    <Route path="/tracker" element={<Tracker />} />
-                    <Route path="/tips" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Tips /></Suspense>} />
-                    <Route path="/library" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Library /></Suspense>} />
-                    <Route path="/diary" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><DinoGame /></Suspense>} />
-                    <Route path="/resources" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Resources /></Suspense>} />
-                    <Route
-                      path="/exercise/massive"
-                      element={
-                        <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                          <MassiveExercise />
-                        </Suspense>
-                      }
-                    />
-                    <Route
-                      path="/videos"
-                      element={
-                        <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                          <MassiveExercise />
-                        </Suspense>
-                      }
-                    />
-                    <Route path="/emergency" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Emergency /></Suspense>} />
-                    <Route path="/community" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Community /></Suspense>} />
-                    { /* Coach page removed; use Assistant instead */ }
-                    { /* RapidCoach removed */ }
-                    <Route path="/profile" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Profile /></Suspense>} />
-                    <Route path="/auth/callback" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><AuthCallback /></Suspense>} />
-                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                  </Routes>
-                </main>
-              </>
-            ) : (
+            {/* Always show navbar and main content - no authentication barrier */}
+            <Navbar />
+            <main className="pb-16 md:pb-0">
               <Routes>
+                {/* Main routes - accessible to everyone */}
                 <Route path="/" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Landing /></Suspense>} />
+                <Route path="/landing" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Landing /></Suspense>} />
                 <Route path="/landing.html" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Landing /></Suspense>} />
-                {/* Login routes and any nested paths under /login */}
+                
+                {/* Authentication routes */}
                 <Route path="/login" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Login /></Suspense>} />
                 <Route path="/login/*" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Login /></Suspense>} />
-                {/* Common mistype alias */}
                 <Route path="/loginpage" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Login /></Suspense>} />
-                {/* Explicit deep-link aliases */}
                 <Route path="/login/community" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Login /></Suspense>} />
-                
-                    <Route path="/assistant" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Assistant /></Suspense>} />
-                <Route
-                  path="/breathing"
-                  element={
-                    <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                      <Breathing />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/exercise"
-                  element={
-                    <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                      <Exercise />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/exercise/massive"
-                  element={
-                    <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                      <MassiveExercise />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/videos"
-                  element={
-                    <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                      <MassiveExercise />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/mentor"
-                  element={
-                    <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                      <MentorDemo />
-                    </Suspense>
-                  }
-                />
-                
-                <Route
-                  path="/voice"
-                  element={
-                    <Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}>
-                      <VoiceMentor />
-                    </Suspense>
-                  }
-                />
                 <Route path="/auth/callback" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><AuthCallback /></Suspense>} />
-                <Route path="/diary" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><DinoGame /></Suspense>} />
-                <Route path="/emergency" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Emergency /></Suspense>} />
-                <Route path="/resources" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Resources /></Suspense>} />
-                <Route path="/jokes" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Jokes /></Suspense>} />
-                <Route path="/database-test" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><DatabaseTest /></Suspense>} />
+                
+                {/* Core application features - no authentication required */}
+                <Route path="/dashboard" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Dashboard /></Suspense>} />
+                <Route path="/dashbord" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Dashboard /></Suspense>} />
+                <Route path="/tracker" element={<Tracker />} />
+                <Route path="/profile" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Profile /></Suspense>} />
+                
+                {/* AI and Analysis Tools */}
+                <Route path="/assistant" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Assistant /></Suspense>} />
                 <Route path="/script-analyzer" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><ScriptAnalyzer /></Suspense>} />
-                { /* Coach page removed; use Assistant instead */ }
-                { /* RapidCoach removed */ }
-                {/* Catch-all back to landing */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="/voice" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><VoiceMentor /></Suspense>} />
+                <Route path="/mentor" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><MentorDemo /></Suspense>} />
+                
+                {/* Wellness and Exercise Features */}
+                <Route path="/breathing" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Breathing /></Suspense>} />
+                <Route path="/exercise" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Exercise /></Suspense>} />
+                <Route path="/exercise/massive" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><MassiveExercise /></Suspense>} />
+                <Route path="/videos" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><MassiveExercise /></Suspense>} />
+                
+                {/* Content and Resources */}
+                <Route path="/tips" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Tips /></Suspense>} />
+                <Route path="/library" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Library /></Suspense>} />
+                <Route path="/resources" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Resources /></Suspense>} />
+                
+                {/* Community and Support */}
+                <Route path="/community" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Community /></Suspense>} />
+                <Route path="/emergency" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Emergency /></Suspense>} />
+                
+                {/* Games and Activities */}
+                <Route path="/diary" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><DinoGame /></Suspense>} />
+                <Route path="/jokes" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><Jokes /></Suspense>} />
+                <Route path="/typing-test" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><TypingTest /></Suspense>} />
+                
+                {/* Development and Testing */}
+                <Route path="/database-test" element={<Suspense fallback={<div className="p-8"><LoadingSpinner /></div>}><DatabaseTest /></Suspense>} />
+                
+                {/* Catch-all - redirect to dashboard instead of login */}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
-            )}
+            </main>
             <DebugPanel />
           </div>
         </Router>
