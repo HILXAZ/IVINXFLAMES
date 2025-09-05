@@ -26,11 +26,10 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Vercel/Deployment
-.vercel/
+# Netlify
+.netlify/
 
 # Misc
 coverage/
 *.local
 *.swp
-.vercel
