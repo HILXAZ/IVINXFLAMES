@@ -7,6 +7,10 @@ Your addiction control web app is now **LIVE** and accessible worldwide!
 ### 🌐 **LIVE PRODUCTION URL:**
 **https://addiction-3mtulkcpj-hilxazs-projects.vercel.app**
 
+### ⚠️ **IMPORTANT NOTE:**
+The previous URL `https://ivinflamex-addiction-control.vercel.app/` is no longer active.
+**Please use the current URL above** to access your website.
+
 ### 📊 **Deployment Details:**
 - **Platform:** Vercel (Free hosting with premium features)
 - **Status:** ✅ Ready & Live
