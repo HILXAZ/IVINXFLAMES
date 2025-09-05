@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth Debug Tool</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .status { 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 10px; 
+            font-weight: bold;
+        }
+        .success { background: rgba(16, 185, 129, 0.8); }
+        .error { background: rgba(239, 68, 68, 0.8); }
+        .warning { background: rgba(245, 158, 11, 0.8); }
+        .info { background: rgba(59, 130, 246, 0.8); }
+        button {
+            background: linear-gradient(135deg, #DC143C, #FFD700);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover { transform: scale(1.05); }
+        code { 
+            background: rgba(0,0,0,0.3); 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-family: monospace;
+        }
+        .url { word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Google OAuth Debug Tool</h1>
+        <p>This tool helps diagnose Google sign-in issues for your addiction control app.</p>
+        
+        <div id="env-check"></div>
+        <div id="oauth-status"></div>
+        
+        <h3>🧪 Test Actions:</h3>
+        <button onclick="testSupabaseConnection()">Test Supabase Connection</button>
+        <button onclick="testGoogleOAuth()">Test Google OAuth</button>
+        <button onclick="checkRedirectURIs()">Check Redirect URIs</button>
+        
+        <h3>📋 Current Configuration:</h3>
+        <div id="config-display"></div>
+        
+        <h3>🚨 Error Log:</h3>
+        <div id="error-log"></div>
+    </div>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // Environment variables (configured from your setup)
+        const config = {
+            supabaseUrl: 'https://otnuqynwyzcgonzfppwm.supabase.co',
+            supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90bnVxeW53eXpjZ29uemZwcHdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3MTQwMTcsImV4cCI6MjA3MDI5MDAxN30.MvEWDC44ppFmRSdMwUkT7R-CmBG-YQxzJx0q36O6Myk',
+            googleClientId: '505403591548-9bbu3bjafmded95j2pla25qif05f0i62.apps.googleusercontent.com'
+        }
+
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseKey)
+        
+        let errorLog = []
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString()
+            errorLog.push(`[${timestamp}] ${type.toUpperCase()}: ${message}`)
+            updateErrorLog()
+            console.log(`${type.toUpperCase()}: ${message}`)
+        }
+        
+        function updateErrorLog() {
+            document.getElementById('error-log').innerHTML = 
+                errorLog.map(entry => `<div class="status info"><code>${entry}</code></div>`).join('')
+        }
+
+        function showStatus(elementId, message, type) {
+            document.getElementById(elementId).innerHTML = 
+                `<div class="status ${type}">${message}</div>`
+        }
+
+        // Check environment variables
+        function checkEnvironment() {
+            let envHtml = '<h4>Environment Variables:</h4>'
+            
+            if (config.supabaseUrl) {
+                envHtml += '<div class="status success">✅ Supabase URL: Configured</div>'
+            } else {
+                envHtml += '<div class="status error">❌ Supabase URL: Missing</div>'
+            }
+            
+            if (config.supabaseKey) {
+                envHtml += '<div class="status success">✅ Supabase Key: Configured</div>'
+            } else {
+                envHtml += '<div class="status error">❌ Supabase Key: Missing</div>'
+            }
+            
+            if (config.googleClientId) {
+                envHtml += '<div class="status success">✅ Google Client ID: Configured</div>'
+            } else {
+                envHtml += '<div class="status error">❌ Google Client ID: Missing</div>'
+            }
+            
+            document.getElementById('env-check').innerHTML = envHtml
+        }
+
+        // Test Supabase connection
+        async function testSupabaseConnection() {
+            try {
+                showStatus('oauth-status', '🔄 Testing Supabase connection...', 'info')
+                log('Testing Supabase connection...')
+                
+                const { data, error } = await supabase.auth.getSession()
+                
+                if (error) {
+                    throw error
+                }
+                
+                showStatus('oauth-status', '✅ Supabase connection successful!', 'success')
+                log('Supabase connection successful')
+                
+            } catch (error) {
+                showStatus('oauth-status', `❌ Supabase connection failed: ${error.message}`, 'error')
+                log(`Supabase connection failed: ${error.message}`, 'error')
+            }
+        }
+
+        // Test Google OAuth
+        async function testGoogleOAuth() {
+            try {
+                showStatus('oauth-status', '🔄 Testing Google OAuth...', 'info')
+                log('Testing Google OAuth...')
+                
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: `${window.location.origin}/auth/callback`,
+                        queryParams: {
+                            access_type: 'offline',
+                            prompt: 'select_account',
+                        }
+                    }
+                })
+                
+                if (error) {
+                    throw error
+                }
+                
+                if (data && data.url) {
+                    showStatus('oauth-status', '✅ Google OAuth initiated successfully! You should be redirected...', 'success')
+                    log('Google OAuth initiated successfully')
+                    log(`Redirect URL: ${data.url}`)
+                } else {
+                    showStatus('oauth-status', '⚠️ Google OAuth initiated but no redirect URL returned', 'warning')
+                    log('Google OAuth initiated but no redirect URL returned', 'warning')
+                }
+                
+            } catch (error) {
+                showStatus('oauth-status', `❌ Google OAuth failed: ${error.message}`, 'error')
+                log(`Google OAuth failed: ${error.message}`, 'error')
+                
+                // Specific error handling
+                if (error.message.includes('403')) {
+                    log('This is likely a redirect_uri_mismatch error', 'error')
+                    log('Check Google Cloud Console redirect URIs', 'error')
+                } else if (error.message.includes('provider')) {
+                    log('Google OAuth may not be configured in Supabase', 'error')
+                }
+            }
+        }
+
+        // Check redirect URIs
+        function checkRedirectURIs() {
+            const currentOrigin = window.location.origin
+            const expectedURIs = [
+                'https://otnuqynwyzcgonzfppwm.supabase.co/auth/v1/callback',
+                'https://ivinnsibiflamex.netlify.app/auth/callback',
+                `${currentOrigin}/auth/callback`
+            ]
+            
+            let uriHtml = '<h4>Required Redirect URIs for Google Cloud Console:</h4>'
+            uriHtml += '<p>Add these EXACT URLs to your Google OAuth client:</p>'
+            
+            expectedURIs.forEach(uri => {
+                uriHtml += `<div class="status info url"><code>${uri}</code></div>`
+            })
+            
+            uriHtml += '<p><strong>Steps:</strong></p>'
+            uriHtml += '<ol>'
+            uriHtml += '<li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></li>'
+            uriHtml += '<li>Find OAuth client: <code>505403591548-9bbu3bjafmded95j2pla25qif05f0i62</code></li>'
+            uriHtml += '<li>Click edit and add the URIs above</li>'
+            uriHtml += '<li>Save and wait 5-10 minutes</li>'
+            uriHtml += '</ol>'
+            
+            document.getElementById('config-display').innerHTML = uriHtml
+            log('Redirect URIs information displayed')
+        }
+
+        // Display current configuration
+        function displayConfig() {
+            const configHtml = `
+                <div class="status info">
+                    <strong>Supabase Project:</strong> ${config.supabaseUrl.split('//')[1].split('.')[0]}
+                </div>
+                <div class="status info">
+                    <strong>Google Client ID:</strong> ${config.googleClientId}
+                </div>
+                <div class="status info">
+                    <strong>Current Domain:</strong> ${window.location.origin}
+                </div>
+                <div class="status info">
+                    <strong>Expected Callback:</strong> ${window.location.origin}/auth/callback
+                </div>
+            `
+            document.getElementById('config-display').innerHTML = configHtml
+        }
+
+        // Initialize page
+        window.onload = function() {
+            checkEnvironment()
+            displayConfig()
+            log('Debug tool initialized')
+            
+            // Auto-test Supabase connection
+            setTimeout(testSupabaseConnection, 1000)
+        }
+    </script>
+</body>
+</html>
