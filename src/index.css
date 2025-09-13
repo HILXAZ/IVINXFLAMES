@@ -7,8 +7,7 @@
     @apply border-gray-200;
   }
   body {
-    @apply bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-gray-900;
-    background-attachment: fixed;
+    @apply bg-white text-gray-800;
   }
   
   /* Responsive text scaling */

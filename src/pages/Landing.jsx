@@ -23,8 +23,8 @@ import {
   MapPin,
   Navigation
 } from 'lucide-react'
+import AuthCTAs from '../components/CTAs'
 import SupportMap from '../components/SupportMap'
-import VantaBirds from '../components/VantaBirds'
 import { supabase, db } from '../lib/supabase'
 
 const Landing = () => {
@@ -102,46 +102,80 @@ const Landing = () => {
   
   const handleFeedbackSubmit = async (e) => {
     e.preventDefault()
+    
+    // Basic validation
+    if (!feedbackForm.message.trim()) {
+      alert('Please enter your feedback message.')
+      return
+    }
+    
+    if (!feedbackForm.type) {
+      alert('Please select a feedback type.')
+      return
+    }
+    
+    // Email validation if provided
+    if (feedbackForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(feedbackForm.email)) {
+      alert('Please enter a valid email address.')
+      return
+    }
+    
     setIsSubmittingFeedback(true)
     
     try {
       // Get current user if authenticated
       const { data: { user } } = await supabase.auth.getUser()
       
-      // Prepare feedback data
+      // Prepare feedback data with timestamps
       const feedbackData = {
         user_id: user?.id || null,
-        name: feedbackForm.name || null,
-        email: feedbackForm.email || null,
+        name: feedbackForm.name?.trim() || null,
+        email: feedbackForm.email?.trim() || null,
         type: feedbackForm.type,
         rating: feedbackForm.rating || null,
-        message: feedbackForm.message
+        message: feedbackForm.message.trim(),
+        status: 'pending',
+        created_at: new Date().toISOString()
       }
       
       // Submit to Supabase
-      await db.submitFeedback(feedbackData)
+      const result = await db.submitFeedback(feedbackData)
       
-      console.log('Feedback submitted successfully:', feedbackData)
-      setFeedbackSubmitted(true)
-      
-      // Update feedback stats
-      const newStats = await db.getFeedbackStats()
-      setFeedbackStats(newStats)
-      
-      // Reset form after successful submission
-      setTimeout(() => {
-        setFeedbackForm({
-          name: '',
-          email: '',
-          type: '',
-          rating: 0,
-          message: ''
-        })
-        setFeedbackSubmitted(false)
-      }, 3000)
+      if (result) {
+        console.log('Feedback submitted successfully:', result)
+        setFeedbackSubmitted(true)
+        
+        // Update feedback stats
+        try {
+          const newStats = await db.getFeedbackStats()
+          setFeedbackStats(newStats)
+        } catch (statsError) {
+          console.warn('Could not update feedback stats:', statsError)
+        }
+        
+        // Reset form after successful submission
+        setTimeout(() => {
+          setFeedbackForm({
+            name: '',
+            email: '',
+            type: '',
+            rating: 0,
+            message: ''
+          })
+          setFeedbackSubmitted(false)
+        }, 3000)
+      }
     } catch (error) {
       console.error('Error submitting feedback:', error)
-      alert('Failed to submit feedback. Please try again.')
+      
+      // Show user-friendly error message
+      if (error.message?.includes('duplicate')) {
+        alert('You have already submitted similar feedback recently. Please try again later.')
+      } else if (error.message?.includes('network')) {
+        alert('Network error. Please check your connection and try again.')
+      } else {
+        alert('Failed to submit feedback. Please try again later.')
+      }
     } finally {
       setIsSubmittingFeedback(false)
     }
@@ -316,120 +350,8 @@ const Landing = () => {
   ]
 
   return (
-    <VantaBirds>
+    <div>
 
-      {/* Header */}
-      <header className="relative z-10 container mx-auto px-6 py-8">
-        <nav className="flex items-center justify-between">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            whileHover={{ 
-              scale: 1.02,
-              transition: { type: "spring", stiffness: 300, damping: 10 }
-            }}
-            className="flex items-center space-x-3 cursor-pointer"
-          >
-            <motion.div 
-              className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center"
-              whileHover={{ 
-                rotateY: 360,
-                boxShadow: "0 10px 30px rgba(59, 130, 246, 0.5)",
-                transition: { duration: 0.6 }
-              }}
-              animate={{
-                boxShadow: [
-                  "0 0 20px rgba(59, 130, 246, 0.3)",
-                  "0 0 30px rgba(147, 51, 234, 0.4)",
-                  "0 0 20px rgba(59, 130, 246, 0.3)"
-                ]
-              }}
-              transition={{
-                boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
-              }}
-            >
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Brain className="w-6 h-6 text-white" />
-              </motion.div>
-            </motion.div>
-            <motion.span 
-              className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
-              animate={{
-                backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"]
-              }}
-              style={{
-                backgroundSize: "200% 200%"
-              }}
-              transition={{
-                backgroundPosition: { duration: 3, repeat: Infinity, ease: "linear" }
-              }}
-            >
-              MindBalance
-            </motion.span>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center space-x-6"
-          >
-            <motion.div
-              whileHover={{ 
-                scale: 1.05,
-                color: "#ffffff"
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link
-                to="/login"
-                className="text-white/80 hover:text-white transition-colors relative group"
-              >
-                <span className="relative z-10">Sign In</span>
-                <motion.div
-                  className="absolute inset-0 bg-white/10 rounded-lg -z-10"
-                  initial={{ scale: 0, opacity: 0 }}
-                  whileHover={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                />
-              </Link>
-            </motion.div>
-            <motion.div
-              whileHover={{ 
-                scale: 1.05,
-                rotateY: 5,
-                boxShadow: "0 20px 40px rgba(59, 130, 246, 0.4)"
-              }}
-              whileTap={{ scale: 0.95 }}
-              animate={{
-                boxShadow: [
-                  "0 10px 20px rgba(59, 130, 246, 0.2)",
-                  "0 15px 30px rgba(147, 51, 234, 0.3)",
-                  "0 10px 20px rgba(59, 130, 246, 0.2)"
-                ]
-              }}
-              transition={{
-                boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
-              }}
-            >
-              <Link
-                to="/login"
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform shadow-lg relative overflow-hidden group"
-              >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"
-                  initial={{ x: "-100%" }}
-                  whileHover={{ x: "100%" }}
-                  transition={{ duration: 0.6 }}
-                />
-                <span className="relative z-10">Get Started Free</span>
-              </Link>
-            </motion.div>
-          </motion.div>
-        </nav>
-      </header>
 
       {/* A Day with MindBalance Modal */}
       {showTimeline && (
@@ -525,7 +447,7 @@ const Landing = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-5xl md:text-7xl font-bold mb-8 leading-tight"
+            className="text-5xl md:text-7xl font-bold mb-8 leading-tight text-gray-800"
             style={{
               transform: useTransform(
                 [x, y],
@@ -534,54 +456,38 @@ const Landing = () => {
             }}
           >
             <motion.span 
-              className="bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent"
+              className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent"
               animate={{
                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                textShadow: [
-                  "0 0 20px rgba(255,255,255,0.1)",
-                  "0 0 40px rgba(59,130,246,0.2)", 
-                  "0 0 20px rgba(255,255,255,0.1)"
-                ]
               }}
               style={{
                 backgroundSize: "200% 200%",
-                filter: "drop-shadow(0 0 10px rgba(255,255,255,0.3))"
               }}
               transition={{
                 backgroundPosition: { duration: 4, repeat: Infinity, ease: "linear" },
-                textShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
               }}
               whileHover={{
                 scale: 1.02,
-                filter: "drop-shadow(0 0 20px rgba(255,255,255,0.5))"
               }}
             >
               Reclaim Your Life with
             </motion.span>
             <br />
             <motion.span 
-              className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+              className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"
               animate={{
                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                 scale: [1, 1.02, 1],
-                textShadow: [
-                  "0 0 30px rgba(59,130,246,0.3)",
-                  "0 0 60px rgba(147,51,234,0.4)",
-                  "0 0 30px rgba(59,130,246,0.3)"
-                ]
               }}
               style={{
                 backgroundSize: "200% 200%",
-                filter: "drop-shadow(0 0 15px rgba(59,130,246,0.4))"
               }}
               transition={{
                 backgroundPosition: { duration: 3, repeat: Infinity, ease: "linear" },
                 scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                textShadow: { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
               }}
               whileHover={{
                 scale: 1.05,
-                filter: "drop-shadow(0 0 25px rgba(59,130,246,0.6))"
               }}
             >
               AI-Powered Recovery
@@ -592,7 +498,7 @@ const Landing = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl md:text-2xl text-white/80 mb-12 leading-relaxed"
+            className="text-xl md:text-2xl text-gray-600 mb-12 leading-relaxed"
             style={{
               transform: useTransform(
                 [x, y],
@@ -603,11 +509,6 @@ const Landing = () => {
             <motion.span
               animate={{
                 opacity: [0.8, 1, 0.8],
-                textShadow: [
-                  "0 0 10px rgba(255,255,255,0.1)",
-                  "0 0 20px rgba(255,255,255,0.2)",
-                  "0 0 10px rgba(255,255,255,0.1)"
-                ]
               }}
               transition={{
                 duration: 3,
@@ -617,7 +518,6 @@ const Landing = () => {
               whileHover={{
                 scale: 1.02,
                 opacity: 1,
-                textShadow: "0 0 25px rgba(255,255,255,0.3)"
               }}
             >
               Join thousands who've transformed their lives with our intelligent addiction recovery platform.
@@ -1353,13 +1253,18 @@ const Landing = () => {
                   </div>
 
                   <div>
-                    <label className="block text-white font-semibold mb-2">Feedback Type</label>
+                    <label className="block text-white font-semibold mb-2">Feedback Type *</label>
                     <select 
                       value={feedbackForm.type}
                       onChange={(e) => handleFeedbackChange('type', e.target.value)}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all duration-200 backdrop-blur-xl"
+                      required
+                      className={`w-full px-4 py-3 border rounded-xl text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all duration-200 backdrop-blur-xl ${
+                        feedbackForm.type 
+                          ? 'bg-white/10 border-white/20' 
+                          : 'bg-red-500/10 border-red-400/30'
+                      }`}
                     >
-                      <option value="" className="bg-gray-800">Select feedback type</option>
+                      <option value="" className="bg-gray-800">Select feedback type (required)</option>
                       <option value="feature-request" className="bg-gray-800">Feature Request</option>
                       <option value="bug-report" className="bg-gray-800">Bug Report</option>
                       <option value="general-feedback" className="bg-gray-800">General Feedback</option>
@@ -1367,6 +1272,9 @@ const Landing = () => {
                       <option value="suggestion" className="bg-gray-800">Suggestion</option>
                       <option value="compliment" className="bg-gray-800">Compliment</option>
                     </select>
+                    {!feedbackForm.type && (
+                      <p className="text-red-300 text-sm mt-1">Feedback type is required</p>
+                    )}
                   </div>
 
                   <div>
@@ -1394,14 +1302,22 @@ const Landing = () => {
                   </div>
 
                   <div>
-                    <label className="block text-white font-semibold mb-2">Your Message</label>
+                    <label className="block text-white font-semibold mb-2">Your Message *</label>
                     <textarea
                       rows="6"
                       value={feedbackForm.message}
                       onChange={(e) => handleFeedbackChange('message', e.target.value)}
-                      placeholder="Share your thoughts, suggestions, or any feedback you have about MindBalance..."
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all duration-200 backdrop-blur-xl resize-none"
+                      placeholder="Share your thoughts, suggestions, or any feedback you have about MindBalance... (required)"
+                      required
+                      className={`w-full px-4 py-3 border rounded-xl text-white placeholder-gray-300 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all duration-200 backdrop-blur-xl resize-none ${
+                        feedbackForm.message.trim() 
+                          ? 'bg-white/10 border-white/20' 
+                          : 'bg-red-500/10 border-red-400/30'
+                      }`}
                     ></textarea>
+                    {!feedbackForm.message.trim() && (
+                      <p className="text-red-300 text-sm mt-1">Message is required</p>
+                    )}
                   </div>
 
                   <motion.button
@@ -1615,7 +1531,7 @@ const Landing = () => {
         isOpen={showSupportMap} 
         onClose={() => setShowSupportMap(false)} 
       />
-  </VantaBirds>
+    </div>
   )
 }
 
