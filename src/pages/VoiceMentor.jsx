@@ -145,7 +145,52 @@ export default function VoiceMentor() {
       setTranscript('')
       setPartialTranscript('')
 
-      await assemblyAI.startRealTimeTranscription()
+      // Define callback functions for transcription
+      const handleTranscript = (text, isFinal) => {
+        if (isFinal) {
+          console.log('Final transcript:', text)
+          setMessages(prev => [...prev, { 
+            role: 'user', 
+            text: text,
+            timestamp: Date.now()
+          }])
+          setPartialTranscript('')
+          
+          // Generate AI response
+          const randomResponse = recoveryResponses[Math.floor(Math.random() * recoveryResponses.length)]
+          setTimeout(() => {
+            setMessages(prev => [...prev, { 
+              role: 'assistant', 
+              text: randomResponse,
+              timestamp: Date.now()
+            }])
+            
+            // Speak the response using Web Speech API
+            if ('speechSynthesis' in window) {
+              const utterance = new SpeechSynthesisUtterance(randomResponse)
+              utterance.rate = 0.9
+              utterance.pitch = 1
+              utterance.volume = 0.8
+              
+              utterance.onstart = () => setIsSpeaking(true)
+              utterance.onend = () => setIsSpeaking(false)
+              
+              window.speechSynthesis.speak(utterance)
+            }
+          }, 1500)
+        } else {
+          setPartialTranscript(text)
+        }
+      }
+
+      const handleError = (error) => {
+        console.error('AssemblyAI transcription error:', error)
+        setStatus('error')
+        setError(error)
+        push('Voice error: ' + error, 'error')
+      }
+
+      await assemblyAI.startRealTimeTranscription(handleTranscript, handleError)
       setIsListening(true)
       setStatus('live')
       
@@ -195,6 +240,7 @@ export default function VoiceMentor() {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent">AI Voice Mentor</h1>
           <div className="flex items-center space-x-2">
             {isListening && <span className="text-xs px-3 py-1.5 rounded-full bg-green-500/20 text-green-200 border border-green-400/30 animate-pulse">LISTENING</span>}
+            {isSpeaking && <span className="text-xs px-3 py-1.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 animate-pulse">SPEAKING</span>}
             <span className="text-xs px-3 py-1.5 rounded-full bg-white/20 text-white border border-white/30">{status}</span>
           </div>
         </div>
