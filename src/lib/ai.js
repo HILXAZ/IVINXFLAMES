@@ -1,5 +1,6 @@
 // AI Service for generating motivational tips and support messages
 const HF_API_URL = 'https://api-inference.huggingface.co/models/noelmathewisaac/inspirational-quotes-distilgpt2'
+const HF_API_TOKEN = import.meta.env.VITE_HF_API_TOKEN;
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 // Fallback motivational quotes for when AI is unavailable
