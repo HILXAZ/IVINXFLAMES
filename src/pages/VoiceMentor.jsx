@@ -28,13 +28,30 @@ export default function VoiceMentor() {
     "Every conversation we have is an investment in your well-being. I'm proud of you for being here."
   ]
 
-  // Initialize voice service
+  // Initialize voice service with enhanced error handling
   useEffect(() => {
     const initializeVoiceService = async () => {
       try {
         if (!ASSEMBLY_API_KEY) {
           setError('AssemblyAI API key is missing. Please check your environment configuration.')
           return
+        }
+
+        // Check browser compatibility
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          setError('Your browser does not support microphone access. Please use Chrome, Firefox, or Edge.')
+          setVoiceSupported(false)
+          return
+        }
+
+        if (!window.WebSocket) {
+          setError('Your browser does not support real-time voice features. Please use a modern browser.')
+          setVoiceSupported(false)
+          return
+        }
+
+        if (!window.speechSynthesis) {
+          push('Voice output not supported in this browser. You will only see text responses.', 'warning')
         }
         
         await assemblyAI.initialize()
@@ -165,16 +182,38 @@ export default function VoiceMentor() {
               timestamp: Date.now()
             }])
             
-            // Speak the response using Web Speech API
+            // Speak the response using Web Speech API with enhanced voice selection
             if ('speechSynthesis' in window) {
               const utterance = new SpeechSynthesisUtterance(randomResponse)
-              utterance.rate = 0.9
-              utterance.pitch = 1
-              utterance.volume = 0.8
+              
+              // Enhanced voice settings
+              utterance.rate = 0.85
+              utterance.pitch = 1.1
+              utterance.volume = 0.9
+              
+              // Try to select a pleasant female voice
+              const voices = window.speechSynthesis.getVoices()
+              const preferredVoice = voices.find(voice => 
+                voice.name.includes('Female') || 
+                voice.name.includes('Samantha') || 
+                voice.name.includes('Karen') ||
+                voice.name.includes('Zira') ||
+                voice.name.includes('Natural')
+              ) || voices.find(voice => voice.lang.startsWith('en'))
+              
+              if (preferredVoice) {
+                utterance.voice = preferredVoice
+              }
               
               utterance.onstart = () => setIsSpeaking(true)
               utterance.onend = () => setIsSpeaking(false)
+              utterance.onerror = (e) => {
+                console.error('Speech synthesis error:', e)
+                setIsSpeaking(false)
+              }
               
+              // Cancel any previous speech before starting new one
+              window.speechSynthesis.cancel()
               window.speechSynthesis.speak(utterance)
             }
           }, 1500)
